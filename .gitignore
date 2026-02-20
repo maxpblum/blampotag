@@ -2,6 +2,7 @@ node_modules
 dist
 .vitest
 commit_msg.txt
+test-results.json
 
 # Playwright
 /test-results/
