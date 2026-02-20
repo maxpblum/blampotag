@@ -8,7 +8,7 @@ This document tracks the progress of Blampotag. It follows a "Functional Core, I
 *Establish the project foundation using `npm init`, Vite, TypeScript (Strict mode), and Jasmine.*
 - **Progress:**
   - [x] Initialize NPM and project structure.
-  - [ ] Configure Vite for static serving.
+  - [x] Configure Vite for static serving.
   - [x] Set up the "CRT/DOS" CSS shell.
   - [ ] Integrate Jasmine for unit testing.
 - **Status:** In Progress
