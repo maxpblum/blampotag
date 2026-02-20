@@ -63,14 +63,32 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
 
         case 'MOVE':
             if (state.phase !== PHASE.ROUND || state.transitionProgress < 1.0) return state;
-            return updatePlayer(state, p => {
-                const nx = p.x + event.dx;
-                const ny = p.y + event.dy;
-                if (nx < 0 || nx >= state.boardConfig.width || ny < 0 || ny >= state.boardConfig.height) {
-                    return p;
+            const currentPlayer = state.players[state.turnIndex];
+            const nx = currentPlayer.x + event.dx;
+            const ny = currentPlayer.y + event.dy;
+            
+            if (nx < 0 || nx >= state.boardConfig.width || ny < 0 || ny >= state.boardConfig.height) {
+                return state;
+            }
+
+            const nextPlayers = state.players.map((p, idx) => {
+                if (idx === state.turnIndex) {
+                    return { ...p, x: nx, y: ny };
                 }
-                return { ...p, x: nx, y: ny };
+                return p;
             });
+
+            const nextState = { ...state, players: nextPlayers };
+
+            // Check collision if 'It' moved
+            if (currentPlayer.isIt) {
+                const collided = nextPlayers.some((p, idx) => idx !== state.turnIndex && p.x === nx && p.y === ny);
+                if (collided) {
+                    console.log("Collision detected!");
+                }
+            }
+
+            return nextState;
 
         default:
             return state;
