@@ -90,6 +90,15 @@ export class MainLoop {
             const count = Math.ceil(countdownTimer / 1000);
             const art = COUNTDOWN_ART[count] || "";
             buffer = writeStringToBuffer(buffer, art, 35, 10);
+        } else if (phase === PHASE.TAGGING_WINDOW) {
+            const boardX = 35;
+            const boardY = 10;
+            buffer = drawBox(buffer, boardX, boardY, boardConfig.width + 2, boardConfig.height + 2);
+            players.forEach(p => {
+                buffer = writeStringToBuffer(buffer, p.emoji, boardX + p.x + 1, boardY + p.y + 1);
+            });
+            buffer = writeStringToBuffer(buffer, "PRESS ENTER TO TAG!", 31, 22);
+            buffer = writeStringToBuffer(buffer, `Time: ${(countdownTimer/1000).toFixed(1)}s`, 35, 23);
         } else if (phase === PHASE.ROUND) {
             const boardX = 35;
             const boardY = 10;
