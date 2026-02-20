@@ -28,9 +28,10 @@ export function writeStringToBuffer(
     lines.forEach((line, dy) => {
         if (y + dy < 0 || y + dy >= nextBuffer.length) return;
         const row = nextBuffer[y + dy];
-        for (let dx = 0; dx < line.length; dx++) {
+        const chars = Array.from(line);
+        for (let dx = 0; dx < chars.length; dx++) {
             if (x + dx < 0 || x + dx >= row.length) continue;
-            row[x + dx] = { char: line[dx], color };
+            row[x + dx] = { char: chars[dx], color };
         }
     });
     return nextBuffer;
