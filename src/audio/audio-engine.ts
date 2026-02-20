@@ -1,9 +1,7 @@
 export class AudioEngine {
     private context: AudioContext | null = null;
 
-    constructor() {
-        // Initialization must be triggered by user interaction
-    }
+    constructor() {}
 
     public init(): void {
         if (!this.context) {
@@ -12,22 +10,29 @@ export class AudioEngine {
         }
     }
 
-    public beep(frequency: number = 440, duration: number = 0.1): void {
+    public beep(frequency: number = 440, duration: number = 0.1, startTimeOffset: number = 0): void {
         if (!this.context) return;
         
+        const startTime = this.context.currentTime + startTimeOffset;
         const oscillator = this.context.createOscillator();
         const gain = this.context.createGain();
 
-        oscillator.type = "square"; // PC Speaker vibe
-        oscillator.frequency.setValueAtTime(frequency, this.context.currentTime);
+        oscillator.type = "square";
+        oscillator.frequency.setValueAtTime(frequency, startTime);
 
-        gain.gain.setValueAtTime(0.1, this.context.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.0001, this.context.currentTime + duration);
+        gain.gain.setValueAtTime(0.1, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
 
         oscillator.connect(gain);
         gain.connect(this.context.destination);
 
-        oscillator.start();
-        oscillator.stop(this.context.currentTime + duration);
+        oscillator.start(startTime);
+        oscillator.stop(startTime + duration);
+    }
+
+    public fanfare(): void {
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+            this.beep(freq, 0.2, i * 0.15);
+        });
     }
 }

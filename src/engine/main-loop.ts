@@ -51,7 +51,11 @@ export class MainLoop {
     };
 
     private update(event: GameEvent): void {
+        const previousPhase = this.state.phase;
         this.state = rootReducer(this.state, event);
+        if (this.state.phase === PHASE.CELEBRATION && previousPhase !== PHASE.CELEBRATION) {
+            this.audio.fanfare();
+        }
     }
 
     private render(): void {
