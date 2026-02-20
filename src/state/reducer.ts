@@ -32,7 +32,7 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                     // Retract move: teleport back and skip turn
                     const players = nextState.players.map((p, idx) => {
                         if (idx === nextState.turnIndex) {
-                            return { ...p, x: p.startOfTurnX, y: p.startOfTurnY };
+                            return { ...p, x: p.startOfTurnX, y: p.startOfTurnY, isIt: true };
                         }
                         return p;
                     });
