@@ -25,6 +25,26 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                 }
                 return { ...nextState, countdownTimer: nextTimer };
             }
+            
+            if (nextState.phase === PHASE.TAGGING_WINDOW) {
+                const nextTimer = nextState.countdownTimer - event.dt;
+                if (nextTimer <= 0) {
+                    // Retract move: teleport back and skip turn
+                    const players = nextState.players.map((p, idx) => {
+                        if (idx === nextState.turnIndex) {
+                            return { ...p, x: p.startOfTurnX, y: p.startOfTurnY };
+                        }
+                        return p;
+                    });
+                    return { 
+                        ...nextState, 
+                        phase: PHASE.ROUND, 
+                        players, 
+                        turnIndex: (nextState.turnIndex + 1) % nextState.players.length 
+                    };
+                }
+                return { ...nextState, countdownTimer: nextTimer };
+            }
             return nextState;
 
         case 'KEY_PRESS':
