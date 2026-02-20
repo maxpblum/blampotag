@@ -26,6 +26,13 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                 return { ...nextState, countdownTimer: nextTimer };
             }
             
+            if (nextState.phase === PHASE.CELEBRATION) {
+                const nextTimer = nextState.countdownTimer - event.dt;
+                if (nextTimer <= 0) {
+                    return transitionTo(nextState, PHASE.RESET);
+                }
+                return { ...nextState, countdownTimer: nextTimer };
+            }
             if (nextState.phase === PHASE.TAGGING_WINDOW) {
                 const nextTimer = nextState.countdownTimer - event.dt;
                 if (nextTimer <= 0) {
@@ -71,7 +78,7 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                         ...p,
                         isIt: p.id === targetId
                     }));
-                    return transitionTo({ ...state, players: nextPlayers }, PHASE.CELEBRATION);
+                    return { ...transitionTo(state, PHASE.CELEBRATION), players: nextPlayers, countdownTimer: 3000 };
                 }
             }
             if (state.phase === PHASE.TAGGING_WINDOW && event.key === 'Enter') {
@@ -82,12 +89,11 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                 } else {
                     // Tag single target
                     const targetId = targets[0].id;
-                    console.log(`Player ${targetId} is now IT!`);
                     const nextPlayers = state.players.map(p => ({
                         ...p,
                         isIt: p.id === targetId
                     }));
-                    return transitionTo({ ...state, players: nextPlayers }, PHASE.CELEBRATION);
+                    return { ...transitionTo(state, PHASE.CELEBRATION), players: nextPlayers, countdownTimer: 3000 };
                 }
             }
             if (state.phase === PHASE.CONFIRMATION && event.key === 'Enter') {

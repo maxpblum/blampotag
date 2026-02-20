@@ -6,6 +6,7 @@ export enum PHASE {
     TAGGING_WINDOW = "TAGGING_WINDOW",
     PLAYER_SELECTION = "PLAYER_SELECTION",
     CELEBRATION = "CELEBRATION",
+    RESET = "RESET",
 }
 
 export type Player = {
