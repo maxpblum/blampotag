@@ -82,6 +82,7 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                 } else {
                     // Tag single target
                     const targetId = targets[0].id;
+                    console.log(`Player ${targetId} is now IT!`);
                     const nextPlayers = state.players.map(p => ({
                         ...p,
                         isIt: p.id === targetId
