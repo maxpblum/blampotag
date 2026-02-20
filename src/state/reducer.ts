@@ -1,12 +1,18 @@
-import { GameState } from './game-state';
+import { GameState, PHASE } from './game-state';
 
 export type GameEvent = 
     | { type: 'TICK'; dt: number }
     | { type: 'MOVE'; dx: number; dy: number }
+    | { type: 'KEY_PRESS'; key: string }
     | { type: 'NONE' };
 
 export function rootReducer(state: GameState, event: GameEvent): GameState {
     switch (event.type) {
+        case 'KEY_PRESS':
+            if (state.phase === PHASE.NAME_ENTRY && event.key === 'Enter') {
+                return { ...state, phase: PHASE.CONFIRMATION };
+            }
+            return state;
         case 'TICK':
             return state;
         case 'MOVE':

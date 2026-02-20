@@ -1,5 +1,6 @@
 export enum PHASE {
     NAME_ENTRY = "NAME_ENTRY",
+    CONFIRMATION = "CONFIRMATION",
 }
 
 export type Player = {

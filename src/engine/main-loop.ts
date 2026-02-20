@@ -21,6 +21,7 @@ export class MainLoop {
     }
 
     private readonly onKeyPress = (key: string): void => {
+        this.update({ type: "KEY_PRESS", key });
         switch (key) {
             case "ArrowUp": this.update({ type: "MOVE", dx: 0, dy: -1 }); break;
             case "ArrowDown": this.update({ type: "MOVE", dx: 0, dy: 1 }); break;
