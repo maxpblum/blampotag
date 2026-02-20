@@ -99,6 +99,17 @@ export class MainLoop {
             });
             buffer = writeStringToBuffer(buffer, "PRESS ENTER TO TAG!", 31, 22);
             buffer = writeStringToBuffer(buffer, `Time: ${(countdownTimer/1000).toFixed(1)}s`, 35, 23);
+        } else if (phase === PHASE.PLAYER_SELECTION) {
+            const boardX = 35;
+            const boardY = 10;
+            buffer = drawBox(buffer, boardX, boardY, boardConfig.width + 2, boardConfig.height + 2);
+            const currentPlayer = players[turnIndex];
+            const targets = players.filter((p, idx) => idx !== turnIndex && p.x === currentPlayer.x && p.y === currentPlayer.y);
+            
+            buffer = writeStringToBuffer(buffer, "CHOOSE TARGET:", 32, 21);
+            targets.forEach((p, i) => {
+                buffer = writeStringToBuffer(buffer, `${i + 1}: ${p.emoji} ${p.name}`, 32, 22 + i);
+            });
         } else if (phase === PHASE.ROUND) {
             const boardX = 35;
             const boardY = 10;
