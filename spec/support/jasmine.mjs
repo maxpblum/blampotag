@@ -1,10 +1,10 @@
 export default {
-  spec_dir: "spec",
+  spec_dir: "src",
   spec_files: [
-    "**/*[sS]pec.?(m)js"
+    "**/*[sS]pec.ts"
   ],
   helpers: [
-    "helpers/**/*.?(m)js"
+    "helpers/**/*.ts"
   ],
   env: {
     stopSpecOnExpectationFailure: false,

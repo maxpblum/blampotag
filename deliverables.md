@@ -10,7 +10,7 @@ This document tracks the progress of Blampotag. It follows a "Functional Core, I
   - [x] Initialize NPM and project structure.
   - [x] Configure Vite for static serving.
   - [x] Set up the "CRT/DOS" CSS shell.
-  - [ ] Integrate Jasmine for unit testing.
+  - [x] Integrate Jasmine for unit testing.
 - **Status:** In Progress
 
 ### 2. Core Game State & Logic (Functional Core)

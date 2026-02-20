@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "jasmine"
+    "test": "NODE_OPTIONS=--import=tsx jasmine"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
     "jasmine": "^6.0.0",
     "jasmine-browser-runner": "^4.0.0",
     "jasmine-core": "^6.0.1",
+    "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vite": "^7.3.1",
     "vitest": "^4.0.18"
