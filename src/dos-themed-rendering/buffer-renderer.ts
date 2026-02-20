@@ -106,9 +106,12 @@ export function renderToContainer(buffer: CharacterBuffer, container: HTMLElemen
             };
             const char = cell.char === " " ? "&nbsp;" : cell.char.replace(/[&<>"']/g, m => replacements[m] || m);
             currentRowHtml += char;
+            }
+            if (currentColor !== "") currentRowHtml += "</span>";
+            html += currentRowHtml + "\n";
+          }
+          if (container.innerHTML !== html) {
+            container.innerHTML = html;
+          }
         }
-        if (currentColor !== "") currentRowHtml += "</span>";
-        html += currentRowHtml + "\n";
-    }
-    container.innerHTML = html;
-}
+        

@@ -14,3 +14,11 @@ test('game output is visible', async ({ page }) => {
   const gameOutput = page.locator('#game-output');
   await expect(gameOutput).toBeVisible();
 });
+
+test('splash screen screenshot', async ({ page }) => {
+  await page.goto('/app/index.html');
+
+  // Assert screenshot of the entire page or a specific locator
+  // We'll capture the game output element's screenshot.
+  await expect(page.locator('#game-output')).toHaveScreenshot('splash-screen.png');
+});
