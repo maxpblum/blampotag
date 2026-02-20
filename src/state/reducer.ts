@@ -33,6 +33,26 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                 }
                 return { ...nextState, countdownTimer: nextTimer };
             }
+
+            if (nextState.phase === PHASE.RESET) {
+                const nextPlayers = [...nextState.players];
+                const occupied = new Set<string>();
+                nextPlayers.forEach((p, i) => {
+                    let nx, ny;
+                    do {
+                        nx = Math.floor(Math.random() * nextState.boardConfig.width);
+                        ny = Math.floor(Math.random() * nextState.boardConfig.height);
+                    } while (occupied.has(`${nx},${ny}`));
+                    nextPlayers[i] = { ...p, x: nx, y: ny, startOfTurnX: nx, startOfTurnY: ny };
+                    occupied.add(`${nx},${ny}`);
+                });
+                return {
+                    ...transitionTo(nextState, PHASE.PRE_GAME_COUNTDOWN),
+                    players: nextPlayers,
+                    countdownTimer: 3000
+                };
+            }
+
             if (nextState.phase === PHASE.TAGGING_WINDOW) {
                 const nextTimer = nextState.countdownTimer - event.dt;
                 if (nextTimer <= 0) {
