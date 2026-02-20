@@ -2,7 +2,7 @@ import { GameState, PHASE } from "../state/game-state";
 import { rootReducer, GameEvent } from "../state/reducer";
 import { renderToContainer, createBuffer, drawBox, writeStringToBuffer } from "../dos-themed-rendering/buffer-renderer";
 import { KeyboardManager } from "../input-and-time-event-logic/keyboard";
-import { TITLE_ART } from "../dos-themed-rendering/ascii-assets";
+import { TITLE_ART, COUNTDOWN_ART } from "../dos-themed-rendering/ascii-assets";
 import { AudioEngine } from "../audio/audio-engine";
 
 export class MainLoop {
@@ -62,6 +62,17 @@ export class MainLoop {
             buffer = writeStringToBuffer(buffer, "-----------------", 31, 11);
             buffer = writeStringToBuffer(buffer, `Name: ${currentPlayer.name}_`, 31, 13);
             buffer = writeStringToBuffer(buffer, "Press ENTER when done", 29, 15);
+        } else if (phase === PHASE.CONFIRMATION) {
+            buffer = writeStringToBuffer(buffer, "START THE GAME?", 32, 10);
+            buffer = writeStringToBuffer(buffer, "---------------", 32, 11);
+            players.forEach((p, i) => {
+                buffer = writeStringToBuffer(buffer, `${p.emoji} ${p.name}`, 32, 13 + i);
+            });
+            buffer = writeStringToBuffer(buffer, "Press ENTER to start", 30, 15 + players.length);
+        } else if (phase === PHASE.PRE_GAME_COUNTDOWN) {
+            const count = Math.ceil(this.state.countdownTimer / 1000);
+            const art = COUNTDOWN_ART[count] || "";
+            buffer = writeStringToBuffer(buffer, art, 35, 10);
         } else {
             const boardX = 35;
             const boardY = 10;
