@@ -7,8 +7,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "browserTests": "playwright test",
     "preview": "vite preview",
-    "test": "NODE_OPTIONS=--import=tsx jasmine"
+    "test": "npm run browserTests && NODE_OPTIONS=--import=tsx jasmine"
   },
   "repository": {
     "type": "git",
@@ -22,6 +23,7 @@
   },
   "homepage": "https://github.com/maxpblum/blampotag#readme",
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@types/jasmine": "^6.0.0",
     "@types/node": "^25.3.0",
     "jasmine": "^6.0.0",
