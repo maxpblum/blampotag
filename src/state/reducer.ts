@@ -8,72 +8,90 @@ export type GameEvent =
 
 export function rootReducer(state: GameState, event: GameEvent): GameState {
     switch (event.type) {
+        case 'TICK':
+            let nextState = state;
+            
+            // Handle transition progress
+            if (state.transitionProgress < 1.0) {
+                const nextProgress = Math.min(1.0, state.transitionProgress + event.dt / 1000); // 1-second transition
+                nextState = { ...nextState, transitionProgress: nextProgress };
+            }
+
+            // Handle countdown
+            if (nextState.phase === PHASE.PRE_GAME_COUNTDOWN && nextState.transitionProgress >= 1.0) {
+                const nextTimer = nextState.countdownTimer - event.dt;
+                if (nextTimer <= 0) {
+                    return transitionTo(nextState, PHASE.ROUND);
+                }
+                return { ...nextState, countdownTimer: nextTimer };
+            }
+            return nextState;
+
         case 'KEY_PRESS':
+            if (state.transitionProgress < 1.0) return state; // Ignore input during transition
+            
             if (state.phase === PHASE.NAME_ENTRY) {
                 if (event.key === 'Enter') {
-                    return { ...state, phase: PHASE.CONFIRMATION };
+                    return transitionTo(state, PHASE.CONFIRMATION);
                 }
                 if (event.key === 'Backspace') {
-                    const players = state.players.map((p, idx) => {
-                        if (idx === state.turnIndex) {
-                            return { ...p, name: p.name.slice(0, -1) };
-                        }
-                        return p;
-                    });
-                    return { ...state, players };
+                    return updatePlayer(state, p => ({ ...p, name: p.name.slice(0, -1) }));
                 }
                 if (event.key.length === 1 && /[a-zA-Z0-9 ]/.test(event.key)) {
-                    const players = state.players.map((p, idx) => {
-                        if (idx === state.turnIndex) {
-                            return { ...p, name: p.name + event.key };
-                        }
-                        return p;
-                    });
-                    return { ...state, players };
+                    return updatePlayer(state, p => ({ ...p, name: p.name + event.key }));
                 }
             }
             if (state.phase === PHASE.CONFIRMATION && event.key === 'Enter') {
                 const nextPlayers = [...state.players];
                 const occupied = new Set<string>();
-                
                 nextPlayers.forEach((p, i) => {
                     let nx, ny;
                     do {
                         nx = Math.floor(Math.random() * state.boardConfig.width);
                         ny = Math.floor(Math.random() * state.boardConfig.height);
                     } while (occupied.has(`${nx},${ny}`));
-                    
                     nextPlayers[i] = { ...p, x: nx, y: ny };
                     occupied.add(`${nx},${ny}`);
                 });
-                
-                return { ...state, phase: PHASE.PRE_GAME_COUNTDOWN, countdownTimer: 3000, players: nextPlayers };
+                return { 
+                    ...transitionTo(state, PHASE.PRE_GAME_COUNTDOWN), 
+                    players: nextPlayers,
+                    countdownTimer: 3000 
+                };
             }
             return state;
-        case 'TICK':
-            if (state.phase === PHASE.PRE_GAME_COUNTDOWN) {
-                const nextTimer = state.countdownTimer - event.dt;
-                if (nextTimer <= 0) {
-                    return { ...state, phase: PHASE.ROUND, countdownTimer: 0 };
-                }
-                return { ...state, countdownTimer: nextTimer };
-            }
-            return state;
+
         case 'MOVE':
-            if (state.phase !== PHASE.ROUND) return state;
-            const players = state.players.map((p, idx) => {
-                if (idx === state.turnIndex) {
-                    const nx = p.x + event.dx;
-                    const ny = p.y + event.dy;
-                    if (nx < 0 || nx >= state.boardConfig.width || ny < 0 || ny >= state.boardConfig.height) {
-                        return p;
-                    }
-                    return { ...p, x: nx, y: ny };
+            if (state.phase !== PHASE.ROUND || state.transitionProgress < 1.0) return state;
+            return updatePlayer(state, p => {
+                const nx = p.x + event.dx;
+                const ny = p.y + event.dy;
+                if (nx < 0 || nx >= state.boardConfig.width || ny < 0 || ny >= state.boardConfig.height) {
+                    return p;
                 }
-                return p;
+                return { ...p, x: nx, y: ny };
             });
-            return { ...state, players };
+
         default:
             return state;
     }
+}
+
+function transitionTo(state: GameState, nextPhase: PHASE): GameState {
+    return {
+        ...state,
+        oldPhase: state.phase,
+        phase: nextPhase,
+        transitionProgress: 0.0
+    };
+}
+
+function updatePlayer(state: GameState, updater: (p: any) => any): GameState {
+    const players = state.players.map((p, idx) => {
+        if (idx === state.turnIndex) {
+            return updater(p);
+        }
+        return p;
+    });
+    return { ...state, players };
 }

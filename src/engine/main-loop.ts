@@ -1,9 +1,10 @@
 import { GameState, PHASE } from "../state/game-state";
 import { rootReducer, GameEvent } from "../state/reducer";
-import { renderToContainer, createBuffer, drawBox, writeStringToBuffer } from "../dos-themed-rendering/buffer-renderer";
+import { renderToContainer, createBuffer, drawBox, writeStringToBuffer, CharacterBuffer } from "../dos-themed-rendering/buffer-renderer";
 import { KeyboardManager } from "../input-and-time-event-logic/keyboard";
 import { TITLE_ART, COUNTDOWN_ART } from "../dos-themed-rendering/ascii-assets";
 import { AudioEngine } from "../audio/audio-engine";
+import { getBlockyWipeBuffer } from "../dos-themed-rendering/transitions";
 
 export class MainLoop {
     private state: GameState;
@@ -54,7 +55,19 @@ export class MainLoop {
     }
 
     private render(): void {
-        const { phase, boardConfig, players, turnIndex } = this.state;
+        const currentBuffer = this.renderPhase(this.state.phase, this.state);
+
+        if (this.state.transitionProgress < 1.0 && this.state.oldPhase) {
+            const oldBuffer = this.renderPhase(this.state.oldPhase, this.state);
+            const blended = getBlockyWipeBuffer(oldBuffer, currentBuffer, this.state.transitionProgress);
+            renderToContainer(blended, this.container);
+        } else {
+            renderToContainer(currentBuffer, this.container);
+        }
+    }
+
+    private renderPhase(phase: PHASE, state: GameState): CharacterBuffer {
+        const { boardConfig, players, turnIndex, countdownTimer } = state;
         let buffer = createBuffer(80, 25);
         
         // Render Title
@@ -64,7 +77,7 @@ export class MainLoop {
             const currentPlayer = players[turnIndex];
             buffer = writeStringToBuffer(buffer, "PLAYER NAME ENTRY", 31, 10);
             buffer = writeStringToBuffer(buffer, "-----------------", 31, 11);
-            buffer = writeStringToBuffer(buffer, `Name: ${currentPlayer.name}_`, 31, 13);
+            buffer = writeStringToBuffer(buffer, `Name: ${currentPlayer?.name || ""}_`, 31, 13);
             buffer = writeStringToBuffer(buffer, "Press ENTER when done", 29, 15);
         } else if (phase === PHASE.CONFIRMATION) {
             buffer = writeStringToBuffer(buffer, "START THE GAME?", 32, 10);
@@ -74,10 +87,10 @@ export class MainLoop {
             });
             buffer = writeStringToBuffer(buffer, "Press ENTER to start", 30, 15 + players.length);
         } else if (phase === PHASE.PRE_GAME_COUNTDOWN) {
-            const count = Math.ceil(this.state.countdownTimer / 1000);
+            const count = Math.ceil(countdownTimer / 1000);
             const art = COUNTDOWN_ART[count] || "";
             buffer = writeStringToBuffer(buffer, art, 35, 10);
-        } else {
+        } else if (phase === PHASE.ROUND) {
             const boardX = 35;
             const boardY = 10;
             // Draw board border
@@ -89,6 +102,6 @@ export class MainLoop {
             });
         }
         
-        renderToContainer(buffer, this.container);
+        return buffer;
     }
 }

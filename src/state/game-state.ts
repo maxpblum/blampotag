@@ -25,4 +25,6 @@ export type GameState = {
     readonly turnIndex: number;
     readonly boardConfig: BoardConfig;
     readonly countdownTimer: number;
+    readonly transitionProgress: number; // 0.0 to 1.0, 1.0 means no transition
+    readonly oldPhase: PHASE | null;
 };

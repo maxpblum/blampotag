@@ -9,7 +9,10 @@ if (container) {
             { id: "1", name: "", emoji: "🧙", x: 2, y: 2, isIt: true }
         ],
         turnIndex: 0,
-        boardConfig: { width: 10, height: 10 }
+        boardConfig: { width: 10, height: 10 },
+        countdownTimer: 0,
+        transitionProgress: 1.0,
+        oldPhase: null
     };
 
     const engine = new MainLoop(initialState, container);
