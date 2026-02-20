@@ -33,6 +33,14 @@ export class MainLoop {
         requestAnimationFrame(this.loop);
     }
 
+    /**
+     * Returns the current state of the game.
+     * Primarily used for E2E testing to verify internal logic.
+     */
+    public getState(): GameState {
+        return this.state;
+    }
+
     private readonly onKeyPress = (key: string): void => {
         this.audio.init();
         this.update({ type: "KEY_PRESS", key });

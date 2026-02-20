@@ -16,6 +16,9 @@ if (container) {
     };
 
     const engine = new MainLoop(initialState, container);
+    // Expose the engine to the global window object to allow E2E tests (like Playwright)
+    // to inspect and verify the internal game state during runtime.
+    (window as any).gameEngine = engine;
     engine.start();
 } else {
     console.error("Game container not found!");
