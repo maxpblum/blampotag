@@ -6,7 +6,7 @@ if (container) {
     const initialState = {
         phase: PHASE.NAME_ENTRY,
         players: [
-            { id: "1", name: "", emoji: "🧙", x: 2, y: 2, isIt: true }
+            { id: "1", name: "", emoji: "🧙", x: 2, y: 2, startOfTurnX: 2, startOfTurnY: 2, isIt: true }
         ],
         turnIndex: 0,
         boardConfig: { width: 10, height: 10 },

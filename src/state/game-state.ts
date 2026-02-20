@@ -3,6 +3,7 @@ export enum PHASE {
     CONFIRMATION = "CONFIRMATION",
     PRE_GAME_COUNTDOWN = "PRE_GAME_COUNTDOWN",
     ROUND = "ROUND",
+    TAGGING_WINDOW = "TAGGING_WINDOW",
 }
 
 export type Player = {
@@ -11,6 +12,8 @@ export type Player = {
     readonly emoji: string;
     readonly x: number;
     readonly y: number;
+    readonly startOfTurnX: number;
+    readonly startOfTurnY: number;
     readonly isIt: boolean;
 };
 

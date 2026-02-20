@@ -13,7 +13,7 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
             
             // Handle transition progress
             if (state.transitionProgress < 1.0) {
-                const nextProgress = Math.min(1.0, state.transitionProgress + event.dt / 1000); // 1-second transition
+                const nextProgress = Math.min(1.0, state.transitionProgress + event.dt / 1000);
                 nextState = { ...nextState, transitionProgress: nextProgress };
             }
 
@@ -28,7 +28,7 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
             return nextState;
 
         case 'KEY_PRESS':
-            if (state.transitionProgress < 1.0) return state; // Ignore input during transition
+            if (state.transitionProgress < 1.0) return state;
             
             if (state.phase === PHASE.NAME_ENTRY) {
                 if (event.key === 'Enter') {
@@ -50,7 +50,7 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                         nx = Math.floor(Math.random() * state.boardConfig.width);
                         ny = Math.floor(Math.random() * state.boardConfig.height);
                     } while (occupied.has(`${nx},${ny}`));
-                    nextPlayers[i] = { ...p, x: nx, y: ny };
+                    nextPlayers[i] = { ...p, x: nx, y: ny, startOfTurnX: nx, startOfTurnY: ny };
                     occupied.add(`${nx},${ny}`);
                 });
                 return { 
@@ -73,22 +73,25 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
 
             const nextPlayers = state.players.map((p, idx) => {
                 if (idx === state.turnIndex) {
-                    return { ...p, x: nx, y: ny };
+                    return { ...p, x: nx, y: ny, startOfTurnX: p.x, startOfTurnY: p.y };
                 }
                 return p;
             });
-
-            const nextState = { ...state, players: nextPlayers };
 
             // Check collision if 'It' moved
             if (currentPlayer.isIt) {
                 const collided = nextPlayers.some((p, idx) => idx !== state.turnIndex && p.x === nx && p.y === ny);
                 if (collided) {
-                    console.log("Collision detected!");
+                    return { 
+                        ...state, 
+                        players: nextPlayers, 
+                        phase: PHASE.TAGGING_WINDOW, 
+                        countdownTimer: 2000 
+                    };
                 }
             }
 
-            return nextState;
+            return { ...state, players: nextPlayers, turnIndex: (state.turnIndex + 1) % state.players.length };
 
         default:
             return state;
