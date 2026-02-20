@@ -33,7 +33,21 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                 }
             }
             if (state.phase === PHASE.CONFIRMATION && event.key === 'Enter') {
-                return { ...state, phase: PHASE.PRE_GAME_COUNTDOWN, countdownTimer: 3000 };
+                const nextPlayers = [...state.players];
+                const occupied = new Set<string>();
+                
+                nextPlayers.forEach((p, i) => {
+                    let nx, ny;
+                    do {
+                        nx = Math.floor(Math.random() * state.boardConfig.width);
+                        ny = Math.floor(Math.random() * state.boardConfig.height);
+                    } while (occupied.has(`${nx},${ny}`));
+                    
+                    nextPlayers[i] = { ...p, x: nx, y: ny };
+                    occupied.add(`${nx},${ny}`);
+                });
+                
+                return { ...state, phase: PHASE.PRE_GAME_COUNTDOWN, countdownTimer: 3000, players: nextPlayers };
             }
             return state;
         case 'TICK':
