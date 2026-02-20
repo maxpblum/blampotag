@@ -11,8 +11,14 @@ export type Player = {
     readonly isIt: boolean;
 };
 
+export type BoardConfig = {
+    readonly width: number;
+    readonly height: number;
+};
+
 export type GameState = {
     readonly phase: PHASE;
     readonly players: readonly Player[];
     readonly turnIndex: number;
+    readonly boardConfig: BoardConfig;
 };
