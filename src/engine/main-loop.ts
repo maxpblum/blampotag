@@ -3,17 +3,20 @@ import { rootReducer, GameEvent } from "../state/reducer";
 import { renderToContainer, createBuffer, drawBox, writeStringToBuffer } from "../dos-themed-rendering/buffer-renderer";
 import { KeyboardManager } from "../input-and-time-event-logic/keyboard";
 import { TITLE_ART } from "../dos-themed-rendering/ascii-assets";
+import { AudioEngine } from "../audio/audio-engine";
 
 export class MainLoop {
     private state: GameState;
     private lastTimestamp: number = 0;
     private readonly keyboard: KeyboardManager;
+    private readonly audio: AudioEngine;
 
     constructor(
         initialState: GameState,
         private readonly container: HTMLElement
     ) {
         this.state = initialState;
+        this.audio = new AudioEngine();
         this.keyboard = new KeyboardManager(this.onKeyPress);
     }
 
@@ -22,6 +25,7 @@ export class MainLoop {
     }
 
     private readonly onKeyPress = (key: string): void => {
+        this.audio.init();
         this.update({ type: "KEY_PRESS", key });
         switch (key) {
             case "ArrowUp": this.update({ type: "MOVE", dx: 0, dy: -1 }); break;
