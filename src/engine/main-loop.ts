@@ -5,10 +5,12 @@ import { KeyboardManager } from "../input-and-time-event-logic/keyboard";
 import { TITLE_ART, COUNTDOWN_ART } from "../dos-themed-rendering/ascii-assets";
 import { AudioEngine } from "../audio/audio-engine";
 import { getBlockyWipeBuffer } from "../dos-themed-rendering/transitions";
+import { overlayHearts, overlayRainbow } from "../dos-themed-rendering/animations";
 
 export class MainLoop {
     private state: GameState;
     private lastTimestamp: number = 0;
+    private totalTime: number = 0;
     private readonly keyboard: KeyboardManager;
     private readonly audio: AudioEngine;
 
@@ -43,6 +45,7 @@ export class MainLoop {
     private readonly loop = (timestamp: number): void => {
         const dt = timestamp - (this.lastTimestamp || timestamp);
         this.lastTimestamp = timestamp;
+        this.totalTime += dt;
 
         this.update({ type: "TICK", dt });
         this.render();
@@ -59,7 +62,12 @@ export class MainLoop {
     }
 
     private render(): void {
-        const currentBuffer = this.renderPhase(this.state.phase, this.state);
+        let currentBuffer = this.renderPhase(this.state.phase, this.state);
+
+        if (this.state.phase === PHASE.CELEBRATION) {
+            currentBuffer = overlayRainbow(currentBuffer, this.totalTime);
+            currentBuffer = overlayHearts(currentBuffer, this.totalTime);
+        }
 
         if (this.state.transitionProgress < 1.0 && this.state.oldPhase) {
             const oldBuffer = this.renderPhase(this.state.oldPhase, this.state);

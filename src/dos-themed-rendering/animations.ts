@@ -10,3 +10,24 @@ export function overlayHearts(buffer: CharacterBuffer, time: number): CharacterB
     }
     return nextBuffer;
 }
+
+export function overlayRainbow(buffer: CharacterBuffer, time: number): CharacterBuffer {
+    const rainbowColors = [
+        "var(--vga-bright-red)",
+        "var(--vga-yellow)",
+        "var(--vga-bright-green)",
+        "var(--vga-bright-cyan)",
+        "var(--vga-bright-blue)",
+        "var(--vga-bright-magenta)",
+    ];
+    
+    return buffer.map((row, y) =>
+        row.map((cell, x) => {
+            if (cell.char === " ") {
+                const colorIdx = Math.floor((x + y + time / 100) % rainbowColors.length);
+                return { char: "░", color: rainbowColors[colorIdx] };
+            }
+            return cell;
+        })
+    );
+}
