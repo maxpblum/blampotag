@@ -2,6 +2,7 @@ import { GameState, PHASE } from "../state/game-state";
 import { rootReducer, GameEvent } from "../state/reducer";
 import { renderToContainer, createBuffer, drawBox, writeStringToBuffer } from "../dos-themed-rendering/buffer-renderer";
 import { KeyboardManager } from "../input-and-time-event-logic/keyboard";
+import { TITLE_ART } from "../dos-themed-rendering/ascii-assets";
 
 export class MainLoop {
     private state: GameState;
@@ -45,16 +46,29 @@ export class MainLoop {
     }
 
     private render(): void {
-        const { boardConfig, players } = this.state;
-        let buffer = createBuffer(boardConfig.width + 2, boardConfig.height + 2);
+        const { phase, boardConfig, players, turnIndex } = this.state;
+        let buffer = createBuffer(80, 25);
         
-        // Draw board border
-        buffer = drawBox(buffer, 0, 0, boardConfig.width + 2, boardConfig.height + 2);
+        // Render Title
+        buffer = writeStringToBuffer(buffer, TITLE_ART.join("\n"), 1, 1);
         
-        // Render players
-        players.forEach(player => {
-            buffer = writeStringToBuffer(buffer, player.emoji, player.x + 1, player.y + 1);
-        });
+        if (phase === PHASE.NAME_ENTRY) {
+            const currentPlayer = players[turnIndex];
+            buffer = writeStringToBuffer(buffer, "PLAYER NAME ENTRY", 31, 10);
+            buffer = writeStringToBuffer(buffer, "-----------------", 31, 11);
+            buffer = writeStringToBuffer(buffer, `Name: ${currentPlayer.name}_`, 31, 13);
+            buffer = writeStringToBuffer(buffer, "Press ENTER when done", 29, 15);
+        } else {
+            const boardX = 35;
+            const boardY = 10;
+            // Draw board border
+            buffer = drawBox(buffer, boardX, boardY, boardConfig.width + 2, boardConfig.height + 2);
+            
+            // Render players
+            players.forEach(player => {
+                buffer = writeStringToBuffer(buffer, player.emoji, boardX + player.x + 1, boardY + player.y + 1);
+            });
+        }
         
         renderToContainer(buffer, this.container);
     }
