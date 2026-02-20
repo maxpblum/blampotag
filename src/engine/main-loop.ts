@@ -28,10 +28,10 @@ export class MainLoop {
         this.audio.init();
         this.update({ type: "KEY_PRESS", key });
         switch (key) {
-            case "ArrowUp": this.update({ type: "MOVE", dx: 0, dy: -1 }); break;
-            case "ArrowDown": this.update({ type: "MOVE", dx: 0, dy: 1 }); break;
-            case "ArrowLeft": this.update({ type: "MOVE", dx: -1, dy: 0 }); break;
-            case "ArrowRight": this.update({ type: "MOVE", dx: 1, dy: 0 }); break;
+            case "ArrowUp": this.update({ type: "MOVE", dx: 0, dy: -1 }); this.audio.beep(400); break;
+            case "ArrowDown": this.update({ type: "MOVE", dx: 0, dy: 1 }); this.audio.beep(400); break;
+            case "ArrowLeft": this.update({ type: "MOVE", dx: -1, dy: 0 }); this.audio.beep(400); break;
+            case "ArrowRight": this.update({ type: "MOVE", dx: 1, dy: 0 }); this.audio.beep(400); break;
         }
     };
 
