@@ -1,13 +1,14 @@
 import { defineConfig } from 'vite';
-import { resolve } from 'path';
 
 export default defineConfig({
-  root: 'app',
+  // Use project root so Vite can see both /app and /src
+  root: '.',
   build: {
-    outDir: '../dist',
+    outDir: 'dist',
     emptyOutDir: true,
   },
   server: {
-    open: true,
+    // Open the game directly in the app folder
+    open: '/app/index.html',
   }
 });
