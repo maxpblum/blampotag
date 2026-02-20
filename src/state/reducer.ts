@@ -61,6 +61,21 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                     return updatePlayer(state, p => ({ ...p, name: p.name + event.key }));
                 }
             }
+            if (state.phase === PHASE.TAGGING_WINDOW && event.key === 'Enter') {
+                const currentPlayer = state.players[state.turnIndex];
+                const targets = state.players.filter((p, idx) => idx !== state.turnIndex && p.x === currentPlayer.x && p.y === currentPlayer.y);
+                if (targets.length > 1) {
+                    return transitionTo(state, PHASE.PLAYER_SELECTION);
+                } else {
+                    // Tag single target
+                    const targetId = targets[0].id;
+                    const nextPlayers = state.players.map(p => ({
+                        ...p,
+                        isIt: p.id === targetId
+                    }));
+                    return transitionTo({ ...state, players: nextPlayers }, PHASE.CELEBRATION);
+                }
+            }
             if (state.phase === PHASE.CONFIRMATION && event.key === 'Enter') {
                 const nextPlayers = [...state.players];
                 const occupied = new Set<string>();
