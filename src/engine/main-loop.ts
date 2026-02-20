@@ -1,6 +1,6 @@
 import { GameState, PHASE } from "../state/game-state";
 import { rootReducer, GameEvent } from "../state/reducer";
-import { renderToContainer, createBuffer } from "../dos-themed-rendering/buffer-renderer";
+import { renderToContainer, createBuffer, drawBox, writeStringToBuffer } from "../dos-themed-rendering/buffer-renderer";
 
 export class MainLoop {
     private state: GameState;
@@ -32,8 +32,17 @@ export class MainLoop {
     }
 
     private render(): void {
-        // Simple placeholder render
-        const buffer = createBuffer(80, 25);
+        const { boardConfig, players } = this.state;
+        let buffer = createBuffer(boardConfig.width + 2, boardConfig.height + 2);
+        
+        // Draw board border
+        buffer = drawBox(buffer, 0, 0, boardConfig.width + 2, boardConfig.height + 2);
+        
+        // Render players
+        players.forEach(player => {
+            buffer = writeStringToBuffer(buffer, player.emoji, player.x + 1, player.y + 1);
+        });
+        
         renderToContainer(buffer, this.container);
     }
 }
