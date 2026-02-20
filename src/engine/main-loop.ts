@@ -32,6 +32,10 @@ export class MainLoop {
             case "ArrowDown": this.update({ type: "MOVE", dx: 0, dy: 1 }); this.audio.beep(400); break;
             case "ArrowLeft": this.update({ type: "MOVE", dx: -1, dy: 0 }); this.audio.beep(400); break;
             case "ArrowRight": this.update({ type: "MOVE", dx: 1, dy: 0 }); this.audio.beep(400); break;
+            case "q": this.update({ type: "MOVE", dx: -1, dy: -1 }); this.audio.beep(400); break;
+            case "e": this.update({ type: "MOVE", dx: 1, dy: -1 }); this.audio.beep(400); break;
+            case "z": this.update({ type: "MOVE", dx: -1, dy: 1 }); this.audio.beep(400); break;
+            case "c": this.update({ type: "MOVE", dx: 1, dy: 1 }); this.audio.beep(400); break;
         }
     };
 
