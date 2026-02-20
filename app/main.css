@@ -77,8 +77,9 @@ body {
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
     /* Ensure the container itself doesn't cause overflow and allows text to scale */
     display: inline-block;
-    max-width: calc(100vw - 60px);
-    max-height: calc(100vh - 60px);
+    max-width: calc(100vw - 40px);
+    max-height: calc(100vh - 40px);
+    box-sizing: border-box;
 }
 
 pre {
@@ -86,8 +87,10 @@ pre {
     line-height: 1.2;
     text-shadow: 0 0 2px var(--vga-light-gray);
     /* Calculate font size based on buffer width (100) and height (45) */
-    /* 100 chars @ 0.5 aspect ratio = 50 * font-size width */
+    /* 100 chars @ 0.6 aspect ratio = 60 * font-size width */
     /* 45 lines @ 1.2 line-height = 54 * font-size height */
-    font-size: min(16px, calc((100vw - 80px) / 50), calc((100vh - 80px) / 54));
+    /* Use 100vw - 100px to account for container padding (40px) and margins (60px) */
+    font-size: min(16px, calc((100vw - 100px) / 60), calc((100vh - 100px) / 54));
+    text-align: left;
 }
 
