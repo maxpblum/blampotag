@@ -17,23 +17,31 @@
     --vga-white: #FFFFFF;
 }
 
-body {
+html, body {
     background-color: var(--vga-black);
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
     color: var(--vga-light-gray);
     font-family: "IBM VGA 8x16", "Courier New", Courier, monospace;
     font-size: 16px;
-    margin: 0;
-    overflow: hidden;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
 }
 
 .crt {
     position: relative;
     width: 100%;
     height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 .scanlines {
@@ -67,10 +75,19 @@ body {
     padding: 20px;
     border: 4px double var(--vga-light-gray);
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+    /* Ensure the container itself doesn't cause overflow and allows text to scale */
+    display: inline-block;
+    max-width: calc(100vw - 60px);
+    max-height: calc(100vh - 60px);
 }
 
 pre {
     margin: 0;
     line-height: 1.2;
     text-shadow: 0 0 2px var(--vga-light-gray);
+    /* Calculate font size based on buffer width (100) and height (45) */
+    /* 100 chars @ 0.5 aspect ratio = 50 * font-size width */
+    /* 45 lines @ 1.2 line-height = 54 * font-size height */
+    font-size: min(16px, calc((100vw - 80px) / 50), calc((100vh - 80px) / 54));
 }
+

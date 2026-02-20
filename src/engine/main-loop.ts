@@ -86,50 +86,74 @@ export class MainLoop {
 
     private renderPhase(phase: PHASE, state: GameState): CharacterBuffer {
         const { boardConfig, players, turnIndex, countdownTimer, pendingPlayerName, avatarSelectionIndex } = state;
-        let buffer = createBuffer(100, 45); // Larger buffer for larger grid
+        const bufferWidth = 100;
+        const bufferHeight = 45;
+        let buffer = createBuffer(bufferWidth, bufferHeight);
         
+        const getCenterX = (text: string) => {
+            const lines = text.split("\n");
+            const maxWidth = Math.max(...lines.map(l => l.length));
+            return Math.floor((bufferWidth - maxWidth) / 2);
+        };
+
         // Render Title with buffer space
-        buffer = writeStringToBuffer(buffer, TITLE_ART.join("\n"), 10, 2, "var(--vga-bright-cyan)");
+        const titleStr = TITLE_ART.join("\n");
+        buffer = writeStringToBuffer(buffer, titleStr, getCenterX(titleStr), 2, "var(--vga-bright-cyan)");
         
         if (phase === PHASE.ADD_PLAYER_NAME) {
-            buffer = writeStringToBuffer(buffer, `PLAYER ${players.length + 1} SETUP`, 40, 12, "var(--vga-yellow)");
-            buffer = writeStringToBuffer(buffer, "-----------------", 40, 13);
-            buffer = writeStringToBuffer(buffer, `Enter Name: ${pendingPlayerName}_`, 35, 15, "var(--vga-white)");
-            buffer = writeStringToBuffer(buffer, "Press ENTER when done", 38, 18);
+            const setupText = `PLAYER ${players.length + 1} SETUP`;
+            buffer = writeStringToBuffer(buffer, setupText, getCenterX(setupText), 12, "var(--vga-yellow)");
+            const underline = "-----------------";
+            buffer = writeStringToBuffer(buffer, underline, getCenterX(underline), 13);
+            const nameInput = `Enter Name: ${pendingPlayerName}_`;
+            buffer = writeStringToBuffer(buffer, nameInput, getCenterX(nameInput), 15, "var(--vga-white)");
+            const enterDone = "Press ENTER when done";
+            buffer = writeStringToBuffer(buffer, enterDone, getCenterX(enterDone), 18);
         } else if (phase === PHASE.CHOOSE_PLAYER_AVATAR) {
-            buffer = writeStringToBuffer(buffer, `CHOOSE AVATAR FOR ${pendingPlayerName.toUpperCase()}`, 35, 12, "var(--vga-yellow)");
-            buffer = writeStringToBuffer(buffer, "---------------------------------", 35, 13);
+            const chooseText = `CHOOSE AVATAR FOR ${pendingPlayerName.toUpperCase()}`;
+            buffer = writeStringToBuffer(buffer, chooseText, getCenterX(chooseText), 12, "var(--vga-yellow)");
+            const underline = "---------------------------------";
+            buffer = writeStringToBuffer(buffer, underline, getCenterX(underline), 13);
             
             const emojiRow = AVAILABLE_EMOJIS.map((e, i) => i === avatarSelectionIndex ? `[${e}]` : ` ${e} `).join(" ");
-            buffer = writeStringToBuffer(buffer, emojiRow, 30, 16);
+            buffer = writeStringToBuffer(buffer, emojiRow, getCenterX(emojiRow), 16);
             
-            buffer = writeStringToBuffer(buffer, "Use ARROWS to pick, ENTER to confirm", 33, 19);
+            const controlsText = "Use ARROWS to pick, ENTER to confirm";
+            buffer = writeStringToBuffer(buffer, controlsText, getCenterX(controlsText), 19);
         } else if (phase === PHASE.CONFIRMATION) {
-            buffer = writeStringToBuffer(buffer, "GAME CONFIGURATION", 40, 12, "var(--vga-yellow)");
-            buffer = writeStringToBuffer(buffer, "------------------", 40, 13);
+            const configText = "GAME CONFIGURATION";
+            buffer = writeStringToBuffer(buffer, configText, getCenterX(configText), 12, "var(--vga-yellow)");
+            const underline = "------------------";
+            buffer = writeStringToBuffer(buffer, underline, getCenterX(underline), 13);
             
             players.forEach((p, i) => {
-                buffer = writeStringToBuffer(buffer, `${p.emoji} ${p.name}`, 35, 15 + i);
+                const playerText = `${p.emoji} ${p.name}`;
+                buffer = writeStringToBuffer(buffer, playerText, getCenterX(playerText), 15 + i);
             });
             
             const nextY = 16 + players.length;
-            buffer = writeStringToBuffer(buffer, `Board Size: ${boardConfig.width}x${boardConfig.height}`, 35, nextY, "var(--vga-bright-green)");
-            buffer = writeStringToBuffer(buffer, "Adjust: Width (+/-) Height ([/])", 35, nextY + 1, "var(--vga-dark-gray)");
+            const boardSizeText = `Board Size: ${boardConfig.width}x${boardConfig.height}`;
+            buffer = writeStringToBuffer(buffer, boardSizeText, getCenterX(boardSizeText), nextY, "var(--vga-bright-green)");
+            const adjustText = "Adjust: Width (+/-) Height ([/])";
+            buffer = writeStringToBuffer(buffer, adjustText, getCenterX(adjustText), nextY + 1, "var(--vga-dark-gray)");
             
-            buffer = writeStringToBuffer(buffer, "'A' to Add Player", 35, nextY + 3, "var(--vga-bright-cyan)");
+            const addText = "'A' to Add Player";
+            buffer = writeStringToBuffer(buffer, addText, getCenterX(addText), nextY + 3, "var(--vga-bright-cyan)");
             if (players.length >= 2) {
-                buffer = writeStringToBuffer(buffer, "Press ENTER to START", 35, nextY + 4, "var(--vga-bright-magenta)");
+                const startText = "Press ENTER to START";
+                buffer = writeStringToBuffer(buffer, startText, getCenterX(startText), nextY + 4, "var(--vga-bright-magenta)");
             } else {
-                buffer = writeStringToBuffer(buffer, "(Need at least 2 players)", 35, nextY + 4, "var(--vga-red)");
+                const minPlayersText = "(Need at least 2 players)";
+                buffer = writeStringToBuffer(buffer, minPlayersText, getCenterX(minPlayersText), nextY + 4, "var(--vga-red)");
             }
         } else if (phase === PHASE.PRE_GAME_COUNTDOWN) {
             const count = Math.ceil(countdownTimer / 1000);
             const art = COUNTDOWN_ART[count] || "";
-            buffer = writeStringToBuffer(buffer, art, 45, 15, "var(--vga-bright-yellow)");
+            buffer = writeStringToBuffer(buffer, art, getCenterX(art), 15, "var(--vga-bright-yellow)");
         } else if (phase === PHASE.ROUND || phase === PHASE.TAGGING_WINDOW || phase === PHASE.PLAYER_SELECTION || phase === PHASE.CELEBRATION || phase === PHASE.RESET) {
             const boardCharWidth = boardConfig.width * GRID_CELL_WIDTH;
             const boardCharHeight = boardConfig.height * GRID_CELL_HEIGHT;
-            const boardX = 10;
+            const boardX = Math.floor((bufferWidth - (boardCharWidth + 20)) / 2); // Center board with side info area
             const boardY = 12;
             
             // Draw board border
