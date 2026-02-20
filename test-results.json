@@ -22,8 +22,104 @@
         "metadata": {
           "actualWorkers": 6
         },
-        "id": "chromium",
-        "name": "chromium",
+        "id": "chromium-desktop-fullscreen",
+        "name": "chromium-desktop-fullscreen",
+        "testDir": "/home/maxblum/projects/blampotag/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/maxblum/projects/blampotag/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "chromium-desktop-fullscreen-zoom-150",
+        "name": "chromium-desktop-fullscreen-zoom-150",
+        "testDir": "/home/maxblum/projects/blampotag/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/maxblum/projects/blampotag/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "chromium-desktop-fullscreen-zoom-200",
+        "name": "chromium-desktop-fullscreen-zoom-200",
+        "testDir": "/home/maxblum/projects/blampotag/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/maxblum/projects/blampotag/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "chromium-desktop-partial",
+        "name": "chromium-desktop-partial",
+        "testDir": "/home/maxblum/projects/blampotag/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/maxblum/projects/blampotag/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "chromium-desktop-partial-zoom-125",
+        "name": "chromium-desktop-partial-zoom-125",
+        "testDir": "/home/maxblum/projects/blampotag/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/maxblum/projects/blampotag/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "chromium-mobile-portrait",
+        "name": "chromium-mobile-portrait",
+        "testDir": "/home/maxblum/projects/blampotag/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      },
+      {
+        "outputDir": "/home/maxblum/projects/blampotag/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 6
+        },
+        "id": "chromium-mobile-landscape",
+        "name": "chromium-mobile-landscape",
         "testDir": "/home/maxblum/projects/blampotag/e2e",
         "testIgnore": [],
         "testMatch": [
@@ -112,19 +208,19 @@
               "timeout": 30000,
               "annotations": [],
               "expectedStatus": "passed",
-              "projectId": "chromium",
-              "projectName": "chromium",
+              "projectId": "chromium-desktop-fullscreen",
+              "projectName": "chromium-desktop-fullscreen",
               "results": [
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 281,
+                  "duration": 305,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-20T13:14:28.830Z",
+                  "startTime": "2026-02-20T13:33:28.656Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -132,7 +228,7 @@
               "status": "expected"
             }
           ],
-          "id": "8324bb52c49185e48ff4-50cbd2946a13ff4215a4",
+          "id": "8324bb52c49185e48ff4-3893ff2873e14e18c4f5",
           "file": "visual.spec.ts",
           "line": 3,
           "column": 1
@@ -146,19 +242,19 @@
               "timeout": 30000,
               "annotations": [],
               "expectedStatus": "passed",
-              "projectId": "chromium",
-              "projectName": "chromium",
+              "projectId": "chromium-desktop-fullscreen",
+              "projectName": "chromium-desktop-fullscreen",
               "results": [
                 {
                   "workerIndex": 1,
                   "parallelIndex": 1,
                   "status": "passed",
-                  "duration": 335,
+                  "duration": 371,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-20T13:14:28.731Z",
+                  "startTime": "2026-02-20T13:33:28.459Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -166,7 +262,415 @@
               "status": "expected"
             }
           ],
-          "id": "8324bb52c49185e48ff4-729bdecdaca0cb252ae3",
+          "id": "8324bb52c49185e48ff4-d9fa5c2b714ccb6cbe46",
+          "file": "visual.spec.ts",
+          "line": 10,
+          "column": 1
+        },
+        {
+          "title": "has correct title",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-desktop-fullscreen-zoom-150",
+              "projectName": "chromium-desktop-fullscreen-zoom-150",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 2,
+                  "status": "passed",
+                  "duration": 268,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-20T13:33:29.059Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-3c90ff91a302fe136a8a",
+          "file": "visual.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "game output is visible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-desktop-fullscreen-zoom-150",
+              "projectName": "chromium-desktop-fullscreen-zoom-150",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 3,
+                  "status": "passed",
+                  "duration": 290,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-20T13:33:29.068Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-b5d6f1a6321403beeb14",
+          "file": "visual.spec.ts",
+          "line": 10,
+          "column": 1
+        },
+        {
+          "title": "has correct title",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-desktop-fullscreen-zoom-200",
+              "projectName": "chromium-desktop-fullscreen-zoom-200",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 4,
+                  "status": "passed",
+                  "duration": 365,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-20T13:33:28.528Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-c8d8f7a1390949d58ccd",
+          "file": "visual.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "game output is visible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-desktop-fullscreen-zoom-200",
+              "projectName": "chromium-desktop-fullscreen-zoom-200",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 5,
+                  "status": "passed",
+                  "duration": 344,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-20T13:33:28.734Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-87296aabae66070a8e82",
+          "file": "visual.spec.ts",
+          "line": 10,
+          "column": 1
+        },
+        {
+          "title": "has correct title",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-desktop-partial",
+              "projectName": "chromium-desktop-partial",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 410,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-20T13:33:31.301Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-7ee0e8b1a3724e0479ac",
+          "file": "visual.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "game output is visible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-desktop-partial",
+              "projectName": "chromium-desktop-partial",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 4,
+                  "status": "passed",
+                  "duration": 382,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-20T13:33:31.350Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-8a1b304b461e2e284aee",
+          "file": "visual.spec.ts",
+          "line": 10,
+          "column": 1
+        },
+        {
+          "title": "has correct title",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-desktop-partial-zoom-125",
+              "projectName": "chromium-desktop-partial-zoom-125",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 401,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-20T13:33:31.293Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-1a13f0b345ca67d17b8a",
+          "file": "visual.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "game output is visible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-desktop-partial-zoom-125",
+              "projectName": "chromium-desktop-partial-zoom-125",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 5,
+                  "status": "passed",
+                  "duration": 411,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-20T13:33:31.837Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-a8e0f3bf686f6cd1b5b5",
+          "file": "visual.spec.ts",
+          "line": 10,
+          "column": 1
+        },
+        {
+          "title": "has correct title",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-mobile-portrait",
+              "projectName": "chromium-mobile-portrait",
+              "results": [
+                {
+                  "workerIndex": 10,
+                  "parallelIndex": 2,
+                  "status": "passed",
+                  "duration": 1311,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-20T13:33:31.783Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-0a55ad04ba334d81d6f9",
+          "file": "visual.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "game output is visible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-mobile-portrait",
+              "projectName": "chromium-mobile-portrait",
+              "results": [
+                {
+                  "workerIndex": 11,
+                  "parallelIndex": 3,
+                  "status": "passed",
+                  "duration": 1487,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-20T13:33:32.002Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-ade9c67eb0582967856b",
+          "file": "visual.spec.ts",
+          "line": 10,
+          "column": 1
+        },
+        {
+          "title": "has correct title",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-mobile-landscape",
+              "projectName": "chromium-mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 12,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1179,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-20T13:33:35.090Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-909223d2de05603622b3",
+          "file": "visual.spec.ts",
+          "line": 3,
+          "column": 1
+        },
+        {
+          "title": "game output is visible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium-mobile-landscape",
+              "projectName": "chromium-mobile-landscape",
+              "results": [
+                {
+                  "workerIndex": 13,
+                  "parallelIndex": 1,
+                  "status": "passed",
+                  "duration": 1179,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-02-20T13:33:35.240Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8324bb52c49185e48ff4-7af7afda8b726d6c3656",
           "file": "visual.spec.ts",
           "line": 10,
           "column": 1
@@ -184,15 +688,15 @@
               "projectName": "firefox",
               "results": [
                 {
-                  "workerIndex": 2,
-                  "parallelIndex": 2,
+                  "workerIndex": 14,
+                  "parallelIndex": 4,
                   "status": "passed",
-                  "duration": 1826,
+                  "duration": 2400,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-20T13:14:29.023Z",
+                  "startTime": "2026-02-20T13:33:35.060Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -218,15 +722,15 @@
               "projectName": "firefox",
               "results": [
                 {
-                  "workerIndex": 3,
-                  "parallelIndex": 3,
+                  "workerIndex": 15,
+                  "parallelIndex": 5,
                   "status": "passed",
-                  "duration": 1899,
+                  "duration": 1862,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-20T13:14:28.910Z",
+                  "startTime": "2026-02-20T13:33:35.798Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -252,15 +756,15 @@
               "projectName": "webkit",
               "results": [
                 {
-                  "workerIndex": 4,
-                  "parallelIndex": 4,
+                  "workerIndex": 16,
+                  "parallelIndex": 2,
                   "status": "passed",
-                  "duration": 1182,
+                  "duration": 1049,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-20T13:14:28.862Z",
+                  "startTime": "2026-02-20T13:33:37.537Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -286,15 +790,15 @@
               "projectName": "webkit",
               "results": [
                 {
-                  "workerIndex": 5,
-                  "parallelIndex": 5,
+                  "workerIndex": 17,
+                  "parallelIndex": 3,
                   "status": "passed",
-                  "duration": 1134,
+                  "duration": 1143,
                   "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-02-20T13:14:28.761Z",
+                  "startTime": "2026-02-20T13:33:37.843Z",
                   "annotations": [],
                   "attachments": []
                 }
@@ -312,9 +816,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-02-20T13:14:27.151Z",
-    "duration": 5461.612999999999,
-    "expected": 6,
+    "startTime": "2026-02-20T13:33:26.710Z",
+    "duration": 12872.805,
+    "expected": 18,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
