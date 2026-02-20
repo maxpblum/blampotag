@@ -1,4 +1,5 @@
-import { GameState, PHASE } from './game-state';
+import { PHASE } from './game-state';
+import type { GameState, Player } from './game-state';
 
 export type GameEvent = 
     | { type: 'TICK'; dt: number }
@@ -11,13 +12,11 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
         case 'TICK':
             let nextState = state;
             
-            // Handle transition progress
             if (state.transitionProgress < 1.0) {
                 const nextProgress = Math.min(1.0, state.transitionProgress + event.dt / 1000);
                 nextState = { ...nextState, transitionProgress: nextProgress };
             }
 
-            // Handle countdown
             if (nextState.phase === PHASE.PRE_GAME_COUNTDOWN && nextState.transitionProgress >= 1.0) {
                 const nextTimer = nextState.countdownTimer - event.dt;
                 if (nextTimer <= 0) {
@@ -25,7 +24,7 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                 }
                 return { ...nextState, countdownTimer: nextTimer };
             }
-            
+
             if (nextState.phase === PHASE.CELEBRATION) {
                 const nextTimer = nextState.countdownTimer - event.dt;
                 if (nextTimer <= 0) {
@@ -56,7 +55,6 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
             if (nextState.phase === PHASE.TAGGING_WINDOW) {
                 const nextTimer = nextState.countdownTimer - event.dt;
                 if (nextTimer <= 0) {
-                    // Retract move: teleport back and skip turn
                     const players = nextState.players.map((p, idx) => {
                         if (idx === nextState.turnIndex) {
                             return { ...p, x: p.startOfTurnX, y: p.startOfTurnY, isIt: true };
@@ -90,30 +88,37 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
             }
             if (state.phase === PHASE.PLAYER_SELECTION) {
                 const currentPlayer = state.players[state.turnIndex];
-                const targets = state.players.filter((p, idx) => idx !== state.turnIndex && p.x === currentPlayer.x && p.y === currentPlayer.y);
-                const selectionIndex = parseInt(event.key) - 1;
-                if (selectionIndex >= 0 && selectionIndex < targets.length) {
-                    const targetId = targets[selectionIndex].id;
-                    const nextPlayers = state.players.map(p => ({
-                        ...p,
-                        isIt: p.id === targetId
-                    }));
-                    return { ...transitionTo(state, PHASE.CELEBRATION), players: nextPlayers, countdownTimer: 3000 };
+                if (currentPlayer) {
+                    const targets = state.players.filter((p, idx) => idx !== state.turnIndex && p.x === currentPlayer.x && p.y === currentPlayer.y);
+                    const selectionIndex = parseInt(event.key) - 1;
+                    if (selectionIndex >= 0 && selectionIndex < targets.length) {
+                        const targetId = targets[selectionIndex]?.id;
+                        if (targetId) {
+                            const nextPlayers = state.players.map(p => ({
+                                ...p,
+                                isIt: p.id === targetId
+                            }));
+                            return { ...transitionTo(state, PHASE.CELEBRATION), players: nextPlayers, countdownTimer: 3000 };
+                        }
+                    }
                 }
             }
             if (state.phase === PHASE.TAGGING_WINDOW && event.key === 'Enter') {
                 const currentPlayer = state.players[state.turnIndex];
-                const targets = state.players.filter((p, idx) => idx !== state.turnIndex && p.x === currentPlayer.x && p.y === currentPlayer.y);
-                if (targets.length > 1) {
-                    return transitionTo(state, PHASE.PLAYER_SELECTION);
-                } else {
-                    // Tag single target
-                    const targetId = targets[0].id;
-                    const nextPlayers = state.players.map(p => ({
-                        ...p,
-                        isIt: p.id === targetId
-                    }));
-                    return { ...transitionTo(state, PHASE.CELEBRATION), players: nextPlayers, countdownTimer: 3000 };
+                if (currentPlayer) {
+                    const targets = state.players.filter((p, idx) => idx !== state.turnIndex && p.x === currentPlayer.x && p.y === currentPlayer.y);
+                    if (targets.length > 1) {
+                        return transitionTo(state, PHASE.PLAYER_SELECTION);
+                    } else if (targets.length === 1) {
+                        const targetId = targets[0]?.id;
+                        if (targetId) {
+                            const nextPlayers = state.players.map(p => ({
+                                ...p,
+                                isIt: p.id === targetId
+                            }));
+                            return { ...transitionTo(state, PHASE.CELEBRATION), players: nextPlayers, countdownTimer: 3000 };
+                        }
+                    }
                 }
             }
             if (state.phase === PHASE.CONFIRMATION && event.key === 'Enter') {
@@ -138,9 +143,10 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
 
         case 'MOVE':
             if (state.phase !== PHASE.ROUND || state.transitionProgress < 1.0) return state;
-            const currentPlayer = state.players[state.turnIndex];
-            const nx = currentPlayer.x + event.dx;
-            const ny = currentPlayer.y + event.dy;
+            const currentPlayerMove = state.players[state.turnIndex];
+            if (!currentPlayerMove) return state;
+            const nx = currentPlayerMove.x + event.dx;
+            const ny = currentPlayerMove.y + event.dy;
             
             if (nx < 0 || nx >= state.boardConfig.width || ny < 0 || ny >= state.boardConfig.height) {
                 return state;
@@ -153,8 +159,7 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                 return p;
             });
 
-            // Check collision if 'It' moved
-            if (currentPlayer.isIt) {
+            if (currentPlayerMove.isIt) {
                 const collided = nextPlayers.some((p, idx) => idx !== state.turnIndex && p.x === nx && p.y === ny);
                 if (collided) {
                     return { 
@@ -182,7 +187,7 @@ function transitionTo(state: GameState, nextPhase: PHASE): GameState {
     };
 }
 
-function updatePlayer(state: GameState, updater: (p: any) => any): GameState {
+function updatePlayer(state: GameState, updater: (p: Player) => Player): GameState {
     const players = state.players.map((p, idx) => {
         if (idx === state.turnIndex) {
             return updater(p);

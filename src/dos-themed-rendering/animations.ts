@@ -1,4 +1,5 @@
-import { CharacterBuffer, Cell, writeStringToBuffer } from "./buffer-renderer";
+import type { CharacterBuffer, Cell } from "./buffer-renderer";
+import { writeStringToBuffer } from "./buffer-renderer";
 
 export function overlayHearts(buffer: CharacterBuffer, time: number): CharacterBuffer {
     let nextBuffer = buffer;
@@ -25,7 +26,7 @@ export function overlayRainbow(buffer: CharacterBuffer, time: number): Character
         row.map((cell, x) => {
             if (cell.char === " ") {
                 const colorIdx = Math.floor((x + y + time / 100) % rainbowColors.length);
-                return { char: "░", color: rainbowColors[colorIdx] };
+                return { char: "░", color: rainbowColors[colorIdx] || "white" };
             }
             return cell;
         })

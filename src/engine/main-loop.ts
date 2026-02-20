@@ -1,6 +1,9 @@
-import { GameState, PHASE } from "../state/game-state";
-import { rootReducer, GameEvent } from "../state/reducer";
-import { renderToContainer, createBuffer, drawBox, writeStringToBuffer, CharacterBuffer } from "../dos-themed-rendering/buffer-renderer";
+import { PHASE } from "../state/game-state";
+import type { GameState } from "../state/game-state";
+import { rootReducer } from "../state/reducer";
+import type { GameEvent } from "../state/reducer";
+import { renderToContainer, createBuffer, drawBox, writeStringToBuffer } from "../dos-themed-rendering/buffer-renderer";
+import type { CharacterBuffer } from "../dos-themed-rendering/buffer-renderer";
 import { KeyboardManager } from "../input-and-time-event-logic/keyboard";
 import { TITLE_ART, COUNTDOWN_ART } from "../dos-themed-rendering/ascii-assets";
 import { AudioEngine } from "../audio/audio-engine";
@@ -82,7 +85,6 @@ export class MainLoop {
         const { boardConfig, players, turnIndex, countdownTimer } = state;
         let buffer = createBuffer(80, 25);
         
-        // Render Title
         buffer = writeStringToBuffer(buffer, TITLE_ART.join("\n"), 1, 1);
         
         if (phase === PHASE.NAME_ENTRY) {
@@ -115,18 +117,17 @@ export class MainLoop {
                 buffer = writeStringToBuffer(buffer, player.emoji, boardX + player.x + 1, boardY + player.y + 1, color);
             });
 
+            const currentPlayer = players[turnIndex];
             if (phase === PHASE.TAGGING_WINDOW) {
                 buffer = writeStringToBuffer(buffer, "PRESS ENTER TO TAG!", 31, 22, "var(--vga-bright-yellow)");
                 buffer = writeStringToBuffer(buffer, `Time: ${(countdownTimer/1000).toFixed(1)}s`, 35, 23);
-            } else if (phase === PHASE.PLAYER_SELECTION) {
-                const currentPlayer = players[turnIndex];
+            } else if (phase === PHASE.PLAYER_SELECTION && currentPlayer) {
                 const targets = players.filter((p, idx) => idx !== turnIndex && p.x === currentPlayer.x && p.y === currentPlayer.y);
                 buffer = writeStringToBuffer(buffer, "CHOOSE TARGET:", 32, 21, "var(--vga-bright-cyan)");
                 targets.forEach((p, i) => {
                     buffer = writeStringToBuffer(buffer, `${i + 1}: ${p.emoji} ${p.name}`, 32, 22 + i);
                 });
-            } else {
-                const currentPlayer = players[turnIndex];
+            } else if (currentPlayer) {
                 buffer = writeStringToBuffer(buffer, `TURN: ${currentPlayer.name}`, 32, 22, "var(--vga-bright-green)");
             }
         }

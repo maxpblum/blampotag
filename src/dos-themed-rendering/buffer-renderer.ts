@@ -26,12 +26,15 @@ export function writeStringToBuffer(
     const nextBuffer = buffer.map((row) => [...row]);
     const lines = text.split("\n");
     lines.forEach((line, dy) => {
-        if (y + dy < 0 || y + dy >= nextBuffer.length) return;
-        const row = nextBuffer[y + dy];
+        const targetY = y + dy;
+        const row = nextBuffer[targetY];
+        if (!row) return;
         const chars = Array.from(line);
         for (let dx = 0; dx < chars.length; dx++) {
-            if (x + dx < 0 || x + dx >= row.length) continue;
-            row[x + dx] = { char: chars[dx], color };
+            const targetX = x + dx;
+            if (targetX < 0 || targetX >= row.length) continue;
+            const char = chars[dx] || " ";
+            row[targetX] = { char, color };
         }
     });
     return nextBuffer;
@@ -69,19 +72,22 @@ export function renderToContainer(buffer: CharacterBuffer, container: HTMLElemen
     let html = "";
     for (let y = 0; y < buffer.length; y++) {
         const row = buffer[y];
+        if (!row) continue;
         let currentRowHtml = "";
         let currentColor = "";
         
         for (let x = 0; x < row.length; x++) {
             const cell = row[x];
+            if (!cell) continue;
             if (cell.color !== currentColor) {
                 if (currentColor !== "") currentRowHtml += "</span>";
                 currentRowHtml += `<span style="color: ${cell.color}">`;
                 currentColor = cell.color;
             }
-            const char = cell.char === " " ? "&nbsp;" : cell.char.replace(/[&<>"']/g, m => ({
+            const replacements: Record<string, string> = {
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-            }[m] as string));
+            };
+            const char = cell.char === " " ? "&nbsp;" : cell.char.replace(/[&<>"']/g, m => replacements[m] || m);
             currentRowHtml += char;
         }
         if (currentColor !== "") currentRowHtml += "</span>";
