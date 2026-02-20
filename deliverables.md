@@ -9,7 +9,7 @@ This document tracks the progress of Blampotag. It follows a "Functional Core, I
 - **Progress:**
   - [x] Initialize NPM and project structure.
   - [ ] Configure Vite for static serving.
-  - [ ] Set up the "CRT/DOS" CSS shell.
+  - [x] Set up the "CRT/DOS" CSS shell.
   - [ ] Integrate Jasmine for unit testing.
 - **Status:** In Progress
 

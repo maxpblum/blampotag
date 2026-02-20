@@ -1,0 +1,4 @@
+node_modules
+dist
+.vitest
+commit_msg.txt
