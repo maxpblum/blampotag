@@ -1,6 +1,6 @@
 # Blampotag
 
-**Blampotag** is a DOS-themed, turn-based version of Tag played on a checkers-style grid. It features a "Functional Core, Imperative Shell" architecture, a CRT-inspired aesthetic, and procedural ASCII animations.
+**Blampotag** is a DOS-themed, turn-based version of Tag played on a checkers-style grid. It features a "Functional Core, Imperative Shell" architecture, a CRT-inspired aesthetic, and procedural ASCII animations. **This project was vibe coded using Gemini CLI and Gemini 3 Flash Preview.**
 
 ## Inspiration
 Blampotag was inspired by a request for a computer game version of Tag that feels like a board game. The rules mirror the strategic turn-taking of checkers, where players move pieces across a grid to tag one another.
