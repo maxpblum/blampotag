@@ -218,12 +218,13 @@ function startNewRound(state: GameState): GameState {
     // Position "It" last to ensure they aren't on top of anyone
     const itIndex = nextPlayers.findIndex(p => p.isIt);
     if (itIndex !== -1) {
+        const itPlayer = nextPlayers[itIndex]!;
         let nx, ny;
         do {
             nx = Math.floor(Math.random() * state.boardConfig.width);
             ny = Math.floor(Math.random() * state.boardConfig.height);
         } while (occupied.has(`${nx},${ny}`));
-        nextPlayers[itIndex] = { ...nextPlayers[itIndex], x: nx, y: ny, startOfTurnX: nx, startOfTurnY: ny };
+        nextPlayers[itIndex] = { ...itPlayer, x: nx, y: ny, startOfTurnX: nx, startOfTurnY: ny };
     }
 
     return {

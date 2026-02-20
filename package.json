@@ -8,8 +8,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "browserTests": "playwright test",
+    "unitTests": "NODE_OPTIONS=--import=tsx jasmine",
     "preview": "vite preview",
-    "test": "npm run browserTests && NODE_OPTIONS=--import=tsx jasmine"
+    "test": "npm run unitTests && npm run browserTests"
   },
   "repository": {
     "type": "git",

@@ -1,7 +1,11 @@
 export class AudioEngine {
     private context: AudioContext | null = null;
 
-    constructor() {}
+    constructor(context?: AudioContext) {
+        if (context) {
+            this.context = context;
+        }
+    }
 
     public init(): void {
         if (!this.context) {

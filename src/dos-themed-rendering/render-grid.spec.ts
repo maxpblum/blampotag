@@ -26,15 +26,15 @@ describe('Grid Rendering', () => {
         buffer = writeStringToBuffer(buffer, emoji, 2, 0);
         
         // The cell at index 2 should have the emoji
-        expect(buffer[0][2].char).toBe(emoji);
-        expect(buffer[0][2].isWide).toBeTrue();
+        expect(buffer[0]![2]!.char).toBe(emoji);
+        expect(buffer[0]![2]!.isWide).toBeTrue();
         
         // The cell at index 3 should be an empty "tail" to prevent shifting
-        expect(buffer[0][3].char).toBe("");
-        expect(buffer[0][3].isWide).toBeFalse();
+        expect(buffer[0]![3]!.char).toBe("");
+        expect(buffer[0]![3]!.isWide).toBeFalse();
         
         // The cell at index 4 should still be a space
-        expect(buffer[0][4].char).toBe(" ");
+        expect(buffer[0]![4]!.char).toBe(" ");
     });
 
     it('should handle borders correctly', () => {
@@ -44,10 +44,10 @@ describe('Grid Rendering', () => {
         buffer = drawBox(buffer, 0, 0, width, height);
         
         // Check corners
-        expect(buffer[0][0].char).toBe("╔");
-        expect(buffer[0][9].char).toBe("╗");
-        expect(buffer[4][0].char).toBe("╚");
-        expect(buffer[4][9].char).toBe("╝");
+        expect(buffer[0]![0]!.char).toBe("╔");
+        expect(buffer[0]![9]!.char).toBe("╗");
+        expect(buffer[4]![0]!.char).toBe("╚");
+        expect(buffer[4]![9]!.char).toBe("╝");
         
         // Check row lengths
         buffer.forEach(row => expect(row.length).toBe(width));

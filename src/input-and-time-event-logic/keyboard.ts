@@ -1,9 +1,12 @@
 export class KeyboardManager {
     private readonly pressedKeys = new Set<string>();
 
-    constructor(private readonly onKeyPress: (key: string) => void) {
-        window.addEventListener("keydown", this.handleKeyDown);
-        window.addEventListener("keyup", this.handleKeyUp);
+    constructor(
+        private readonly onKeyPress: (key: string) => void,
+        private readonly target: EventTarget = window
+    ) {
+        this.target.addEventListener("keydown", this.handleKeyDown as EventListener);
+        this.target.addEventListener("keyup", this.handleKeyUp as EventListener);
     }
 
     private readonly handleKeyDown = (event: KeyboardEvent): void => {
@@ -19,7 +22,7 @@ export class KeyboardManager {
     };
 
     public dispose(): void {
-        window.removeEventListener("keydown", this.handleKeyDown);
-        window.removeEventListener("keyup", this.handleKeyUp);
+        this.target.removeEventListener("keydown", this.handleKeyDown as EventListener);
+        this.target.removeEventListener("keyup", this.handleKeyUp as EventListener);
     }
 }

@@ -6,6 +6,9 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
+    rollupOptions: {
+      input: 'app/index.html',
+    },
   },
   server: {
     // Open the game directly in the app folder

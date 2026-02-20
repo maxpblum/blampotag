@@ -1,5 +1,10 @@
 import { MainLoop } from "./engine/main-loop";
 import { PHASE } from "./state/game-state";
+import { GameRenderer } from "./rendering/game-renderer";
+import { WebAudioPlayer } from "./audio/game-audio";
+import { AudioEngine } from "./audio/audio-engine";
+import { KeyboardManager } from "./input-and-time-event-logic/keyboard";
+import { Ticker } from "./input-and-time-event-logic/ticker";
 
 const container = document.getElementById("game-output");
 if (container) {
@@ -15,13 +20,21 @@ if (container) {
         pendingPlayerName: ""
     };
 
-    const engine = new MainLoop(initialState, container);
-    // Expose the engine to the global window object to allow E2E tests (like Playwright)
-    // to inspect and verify the internal game state during runtime.
+    const audioEngine = new AudioEngine();
+    const gameAudio = new WebAudioPlayer(audioEngine);
+    const renderer = new GameRenderer(container, gameAudio);
+    
+    let engine: MainLoop;
+    const ticker = new Ticker((ts) => engine.loop(ts));
+    const keyboard = new KeyboardManager((key) => engine.onKeyPress(key));
+    
+    engine = new MainLoop(initialState, renderer, keyboard, ticker);
+    
+    // Expose the engine to the global window object to allow E2E tests
     (window as any).gameEngine = engine;
     engine.start();
 } else {
     console.error("Game container not found!");
 }
 
-console.log("Blampotag Init");
+console.log("Blampotag Init Refactored");
