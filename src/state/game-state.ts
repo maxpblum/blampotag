@@ -1,6 +1,8 @@
 export enum PHASE {
     NAME_ENTRY = "NAME_ENTRY",
     CONFIRMATION = "CONFIRMATION",
+    PRE_GAME_COUNTDOWN = "PRE_GAME_COUNTDOWN",
+    ROUND = "ROUND",
 }
 
 export type Player = {
@@ -22,4 +24,5 @@ export type GameState = {
     readonly players: readonly Player[];
     readonly turnIndex: number;
     readonly boardConfig: BoardConfig;
+    readonly countdownTimer: number;
 };
