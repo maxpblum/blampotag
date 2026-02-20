@@ -1,5 +1,6 @@
 export enum PHASE {
-    NAME_ENTRY = "NAME_ENTRY",
+    ADD_PLAYER_NAME = "ADD_PLAYER_NAME",
+    CHOOSE_PLAYER_AVATAR = "CHOOSE_PLAYER_AVATAR",
     CONFIRMATION = "CONFIRMATION",
     PRE_GAME_COUNTDOWN = "PRE_GAME_COUNTDOWN",
     ROUND = "ROUND",
@@ -28,9 +29,13 @@ export type BoardConfig = {
 export type GameState = {
     readonly phase: PHASE;
     readonly players: readonly Player[];
-    readonly turnIndex: number;
+    readonly turnIndex: number; // During setup, this is the index of the player being created
     readonly boardConfig: BoardConfig;
     readonly countdownTimer: number;
-    readonly transitionProgress: number; // 0.0 to 1.0, 1.0 means no transition
+    readonly transitionProgress: number; 
     readonly oldPhase: PHASE | null;
+    readonly avatarSelectionIndex: number;
+    readonly pendingPlayerName: string;
 };
+
+export const AVAILABLE_EMOJIS = ["🧙", "🧛", "👻", "🤖", "👽", "🦄", "🐙", "🦖", "🥷", "🧝"];

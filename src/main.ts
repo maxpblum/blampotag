@@ -4,15 +4,15 @@ import { PHASE } from "./state/game-state";
 const container = document.getElementById("game-output");
 if (container) {
     const initialState = {
-        phase: PHASE.NAME_ENTRY,
-        players: [
-            { id: "1", name: "", emoji: "🧙", x: 2, y: 2, startOfTurnX: 2, startOfTurnY: 2, isIt: true }
-        ],
+        phase: PHASE.ADD_PLAYER_NAME,
+        players: [],
         turnIndex: 0,
-        boardConfig: { width: 10, height: 10 },
+        boardConfig: { width: 8, height: 8 },
         countdownTimer: 0,
         transitionProgress: 1.0,
-        oldPhase: null
+        oldPhase: null,
+        avatarSelectionIndex: 0,
+        pendingPlayerName: ""
     };
 
     const engine = new MainLoop(initialState, container);

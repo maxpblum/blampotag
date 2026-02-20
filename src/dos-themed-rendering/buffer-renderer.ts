@@ -3,6 +3,7 @@ import { BOX_CHARS } from "./ascii-assets";
 export type Cell = {
     readonly char: string;
     readonly color: string;
+    readonly isWide?: boolean; // If true, this character takes up 2 monospaced slots
 };
 
 export type CharacterBuffer = readonly (readonly Cell[])[];
@@ -30,11 +31,26 @@ export function writeStringToBuffer(
         const row = nextBuffer[targetY];
         if (!row) return;
         const chars = Array.from(line);
-        for (let dx = 0; dx < chars.length; dx++) {
-            const targetX = x + dx;
-            if (targetX < 0 || targetX >= row.length) continue;
-            const char = chars[dx] || " ";
-            row[targetX] = { char, color };
+        let currentX = x;
+        for (let i = 0; i < chars.length; i++) {
+            const char = chars[i] || " ";
+            if (currentX < 0 || currentX >= row.length) {
+                currentX++;
+                continue;
+            }
+            
+            // Basic heuristic for double-width characters (emojis)
+            const isWide = char.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji_Presentation}/u) !== null;
+            
+            row[currentX] = { char, color, isWide };
+            
+            // If it's wide, we must effectively "nullify" the next cell to prevent overlap/shift
+            if (isWide && currentX + 1 < row.length) {
+                row[currentX + 1] = { char: "", color, isWide: false }; // Empty string won't render
+                currentX += 2;
+            } else {
+                currentX += 1;
+            }
         }
     });
     return nextBuffer;
@@ -78,7 +94,8 @@ export function renderToContainer(buffer: CharacterBuffer, container: HTMLElemen
         
         for (let x = 0; x < row.length; x++) {
             const cell = row[x];
-            if (!cell) continue;
+            if (!cell || cell.char === "") continue; // Skip wide char tails
+            
             if (cell.color !== currentColor) {
                 if (currentColor !== "") currentRowHtml += "</span>";
                 currentRowHtml += `<span style="color: ${cell.color}">`;

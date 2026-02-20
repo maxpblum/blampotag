@@ -1,4 +1,4 @@
-import { PHASE } from './game-state';
+import { PHASE, AVAILABLE_EMOJIS } from './game-state';
 import type { GameState, Player } from './game-state';
 
 export type GameEvent = 
@@ -34,22 +34,7 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
             }
 
             if (nextState.phase === PHASE.RESET) {
-                const nextPlayers = [...nextState.players];
-                const occupied = new Set<string>();
-                nextPlayers.forEach((p, i) => {
-                    let nx, ny;
-                    do {
-                        nx = Math.floor(Math.random() * nextState.boardConfig.width);
-                        ny = Math.floor(Math.random() * nextState.boardConfig.height);
-                    } while (occupied.has(`${nx},${ny}`));
-                    nextPlayers[i] = { ...p, x: nx, y: ny, startOfTurnX: nx, startOfTurnY: ny };
-                    occupied.add(`${nx},${ny}`);
-                });
-                return {
-                    ...transitionTo(nextState, PHASE.PRE_GAME_COUNTDOWN),
-                    players: nextPlayers,
-                    countdownTimer: 3000
-                };
+                return startNewRound(nextState);
             }
 
             if (nextState.phase === PHASE.TAGGING_WINDOW) {
@@ -75,17 +60,60 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
         case 'KEY_PRESS':
             if (state.transitionProgress < 1.0) return state;
             
-            if (state.phase === PHASE.NAME_ENTRY) {
-                if (event.key === 'Enter') {
-                    return transitionTo(state, PHASE.CONFIRMATION);
+            if (state.phase === PHASE.ADD_PLAYER_NAME) {
+                if (event.key === 'Enter' && state.pendingPlayerName.trim().length > 0) {
+                    return { ...state, phase: PHASE.CHOOSE_PLAYER_AVATAR, avatarSelectionIndex: 0 };
                 }
                 if (event.key === 'Backspace') {
-                    return updatePlayer(state, p => ({ ...p, name: p.name.slice(0, -1) }));
+                    return { ...state, pendingPlayerName: state.pendingPlayerName.slice(0, -1) };
                 }
                 if (event.key.length === 1 && /[a-zA-Z0-9 ]/.test(event.key)) {
-                    return updatePlayer(state, p => ({ ...p, name: p.name + event.key }));
+                    return { ...state, pendingPlayerName: state.pendingPlayerName + event.key };
                 }
             }
+
+            if (state.phase === PHASE.CHOOSE_PLAYER_AVATAR) {
+                if (event.key === 'ArrowLeft') {
+                    return { ...state, avatarSelectionIndex: (state.avatarSelectionIndex - 1 + AVAILABLE_EMOJIS.length) % AVAILABLE_EMOJIS.length };
+                }
+                if (event.key === 'ArrowRight') {
+                    return { ...state, avatarSelectionIndex: (state.avatarSelectionIndex + 1) % AVAILABLE_EMOJIS.length };
+                }
+                if (event.key === 'Enter') {
+                    const newPlayer: Player = {
+                        id: crypto.randomUUID(),
+                        name: state.pendingPlayerName,
+                        emoji: AVAILABLE_EMOJIS[state.avatarSelectionIndex] || "👤",
+                        x: 0, y: 0, startOfTurnX: 0, startOfTurnY: 0,
+                        isIt: false
+                    };
+                    return { 
+                        ...state, 
+                        players: [...state.players, newPlayer],
+                        phase: PHASE.CONFIRMATION,
+                        pendingPlayerName: "",
+                        avatarSelectionIndex: 0
+                    };
+                }
+            }
+
+            if (state.phase === PHASE.CONFIRMATION) {
+                if (event.key === 'a' || event.key === 'A') {
+                    return { ...state, phase: PHASE.ADD_PLAYER_NAME, pendingPlayerName: "" };
+                }
+                if (event.key === 'Enter' && state.players.length >= 2) {
+                    // Randomize "It"
+                    const itIndex = Math.floor(Math.random() * state.players.length);
+                    const playersWithIt = state.players.map((p, i) => ({ ...p, isIt: i === itIndex }));
+                    return startNewRound({ ...state, players: playersWithIt, turnIndex: 0 });
+                }
+                // Board config
+                if (event.key === '=') return { ...state, boardConfig: { ...state.boardConfig, width: Math.min(20, state.boardConfig.width + 1) } };
+                if (event.key === '-') return { ...state, boardConfig: { ...state.boardConfig, width: Math.max(4, state.boardConfig.width - 1) } };
+                if (event.key === ']') return { ...state, boardConfig: { ...state.boardConfig, height: Math.min(20, state.boardConfig.height + 1) } };
+                if (event.key === '[') return { ...state, boardConfig: { ...state.boardConfig, height: Math.max(4, state.boardConfig.height - 1) } };
+            }
+
             if (state.phase === PHASE.PLAYER_SELECTION) {
                 const currentPlayer = state.players[state.turnIndex];
                 if (currentPlayer) {
@@ -103,6 +131,7 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                     }
                 }
             }
+
             if (state.phase === PHASE.TAGGING_WINDOW && event.key === 'Enter') {
                 const currentPlayer = state.players[state.turnIndex];
                 if (currentPlayer) {
@@ -120,24 +149,6 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                         }
                     }
                 }
-            }
-            if (state.phase === PHASE.CONFIRMATION && event.key === 'Enter') {
-                const nextPlayers = [...state.players];
-                const occupied = new Set<string>();
-                nextPlayers.forEach((p, i) => {
-                    let nx, ny;
-                    do {
-                        nx = Math.floor(Math.random() * state.boardConfig.width);
-                        ny = Math.floor(Math.random() * state.boardConfig.height);
-                    } while (occupied.has(`${nx},${ny}`));
-                    nextPlayers[i] = { ...p, x: nx, y: ny, startOfTurnX: nx, startOfTurnY: ny };
-                    occupied.add(`${nx},${ny}`);
-                });
-                return { 
-                    ...transitionTo(state, PHASE.PRE_GAME_COUNTDOWN), 
-                    players: nextPlayers,
-                    countdownTimer: 3000 
-                };
             }
             return state;
 
@@ -187,12 +198,38 @@ function transitionTo(state: GameState, nextPhase: PHASE): GameState {
     };
 }
 
-function updatePlayer(state: GameState, updater: (p: Player) => Player): GameState {
-    const players = state.players.map((p, idx) => {
-        if (idx === state.turnIndex) {
-            return updater(p);
-        }
-        return p;
+function startNewRound(state: GameState): GameState {
+    const nextPlayers = [...state.players];
+    const occupied = new Set<string>();
+    
+    // Position non-It players first
+    nextPlayers.filter(p => !p.isIt).forEach((p) => {
+        let nx, ny;
+        do {
+            nx = Math.floor(Math.random() * state.boardConfig.width);
+            ny = Math.floor(Math.random() * state.boardConfig.height);
+        } while (occupied.has(`${nx},${ny}`));
+        
+        const idx = nextPlayers.indexOf(p);
+        nextPlayers[idx] = { ...p, x: nx, y: ny, startOfTurnX: nx, startOfTurnY: ny };
+        occupied.add(`${nx},${ny}`);
     });
-    return { ...state, players };
+
+    // Position "It" last to ensure they aren't on top of anyone
+    const itIndex = nextPlayers.findIndex(p => p.isIt);
+    if (itIndex !== -1) {
+        let nx, ny;
+        do {
+            nx = Math.floor(Math.random() * state.boardConfig.width);
+            ny = Math.floor(Math.random() * state.boardConfig.height);
+        } while (occupied.has(`${nx},${ny}`));
+        nextPlayers[itIndex] = { ...nextPlayers[itIndex], x: nx, y: ny, startOfTurnX: nx, startOfTurnY: ny };
+    }
+
+    return {
+        ...transitionTo(state, PHASE.PRE_GAME_COUNTDOWN),
+        players: nextPlayers,
+        countdownTimer: 3000,
+        turnIndex: 0
+    };
 }
