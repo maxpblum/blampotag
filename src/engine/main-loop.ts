@@ -102,36 +102,33 @@ export class MainLoop {
             const count = Math.ceil(countdownTimer / 1000);
             const art = COUNTDOWN_ART[count] || "";
             buffer = writeStringToBuffer(buffer, art, 35, 10);
-        } else if (phase === PHASE.TAGGING_WINDOW) {
+        } else if (phase === PHASE.ROUND || phase === PHASE.TAGGING_WINDOW || phase === PHASE.PLAYER_SELECTION) {
             const boardX = 35;
             const boardY = 10;
-            buffer = drawBox(buffer, boardX, boardY, boardConfig.width + 2, boardConfig.height + 2);
-            players.forEach(p => {
-                buffer = writeStringToBuffer(buffer, p.emoji, boardX + p.x + 1, boardY + p.y + 1);
-            });
-            buffer = writeStringToBuffer(buffer, "PRESS ENTER TO TAG!", 31, 22);
-            buffer = writeStringToBuffer(buffer, `Time: ${(countdownTimer/1000).toFixed(1)}s`, 35, 23);
-        } else if (phase === PHASE.PLAYER_SELECTION) {
-            const boardX = 35;
-            const boardY = 10;
-            buffer = drawBox(buffer, boardX, boardY, boardConfig.width + 2, boardConfig.height + 2);
-            const currentPlayer = players[turnIndex];
-            const targets = players.filter((p, idx) => idx !== turnIndex && p.x === currentPlayer.x && p.y === currentPlayer.y);
-            
-            buffer = writeStringToBuffer(buffer, "CHOOSE TARGET:", 32, 21);
-            targets.forEach((p, i) => {
-                buffer = writeStringToBuffer(buffer, `${i + 1}: ${p.emoji} ${p.name}`, 32, 22 + i);
-            });
-        } else if (phase === PHASE.ROUND) {
-            const boardX = 35;
-            const boardY = 10;
-            // Draw board border
             buffer = drawBox(buffer, boardX, boardY, boardConfig.width + 2, boardConfig.height + 2);
             
-            // Render players
-            players.forEach(player => {
-                buffer = writeStringToBuffer(buffer, player.emoji, boardX + player.x + 1, boardY + player.y + 1);
+            players.forEach((player, idx) => {
+                let color = "var(--vga-light-gray)";
+                if (player.isIt) color = "var(--vga-bright-red)";
+                else if (idx === turnIndex) color = "var(--vga-bright-green)";
+                
+                buffer = writeStringToBuffer(buffer, player.emoji, boardX + player.x + 1, boardY + player.y + 1, color);
             });
+
+            if (phase === PHASE.TAGGING_WINDOW) {
+                buffer = writeStringToBuffer(buffer, "PRESS ENTER TO TAG!", 31, 22, "var(--vga-bright-yellow)");
+                buffer = writeStringToBuffer(buffer, `Time: ${(countdownTimer/1000).toFixed(1)}s`, 35, 23);
+            } else if (phase === PHASE.PLAYER_SELECTION) {
+                const currentPlayer = players[turnIndex];
+                const targets = players.filter((p, idx) => idx !== turnIndex && p.x === currentPlayer.x && p.y === currentPlayer.y);
+                buffer = writeStringToBuffer(buffer, "CHOOSE TARGET:", 32, 21, "var(--vga-bright-cyan)");
+                targets.forEach((p, i) => {
+                    buffer = writeStringToBuffer(buffer, `${i + 1}: ${p.emoji} ${p.name}`, 32, 22 + i);
+                });
+            } else {
+                const currentPlayer = players[turnIndex];
+                buffer = writeStringToBuffer(buffer, `TURN: ${currentPlayer.name}`, 32, 22, "var(--vga-bright-green)");
+            }
         }
         
         return buffer;

@@ -47,19 +47,16 @@ export function drawBox(
 ): CharacterBuffer {
     let nextBuffer = buffer;
     
-    // Horizontal lines
     for (let dx = 1; dx < width - 1; dx++) {
         nextBuffer = writeStringToBuffer(nextBuffer, BOX_CHARS.HORIZONTAL, x + dx, y, color);
         nextBuffer = writeStringToBuffer(nextBuffer, BOX_CHARS.HORIZONTAL, x + dx, y + height - 1, color);
     }
     
-    // Vertical lines
     for (let dy = 1; dy < height - 1; dy++) {
         nextBuffer = writeStringToBuffer(nextBuffer, BOX_CHARS.VERTICAL, x, y + dy, color);
         nextBuffer = writeStringToBuffer(nextBuffer, BOX_CHARS.VERTICAL, x + width - 1, y + dy, color);
     }
     
-    // Corners
     nextBuffer = writeStringToBuffer(nextBuffer, BOX_CHARS.TOP_LEFT, x, y, color);
     nextBuffer = writeStringToBuffer(nextBuffer, BOX_CHARS.TOP_RIGHT, x + width - 1, y, color);
     nextBuffer = writeStringToBuffer(nextBuffer, BOX_CHARS.BOTTOM_LEFT, x, y + height - 1, color);
@@ -69,9 +66,26 @@ export function drawBox(
 }
 
 export function renderToContainer(buffer: CharacterBuffer, container: HTMLElement): void {
-    const text = buffer
-        .map((row) => row.map((cell) => cell.char).join(""))
-        .join("
-");
-    container.textContent = text;
+    let html = "";
+    for (let y = 0; y < buffer.length; y++) {
+        const row = buffer[y];
+        let currentRowHtml = "";
+        let currentColor = "";
+        
+        for (let x = 0; x < row.length; x++) {
+            const cell = row[x];
+            if (cell.color !== currentColor) {
+                if (currentColor !== "") currentRowHtml += "</span>";
+                currentRowHtml += `<span style="color: ${cell.color}">`;
+                currentColor = cell.color;
+            }
+            const char = cell.char === " " ? "&nbsp;" : cell.char.replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            }[m] as string));
+            currentRowHtml += char;
+        }
+        if (currentColor !== "") currentRowHtml += "</span>";
+        html += currentRowHtml + "\n";
+    }
+    container.innerHTML = html;
 }
