@@ -1,13 +1,15 @@
 import { test, expect } from '@playwright/test';
 
-test('has correct title', async ({ page }) => {
+test('has correct title', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium-desktop-partial');
   await page.goto('/app/index.html');
 
   // Expect a title "to contain" a substring.
   await expect(page).toHaveTitle(/Blampotag/);
 });
 
-test('game output is visible', async ({ page }) => {
+test('game output is visible', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'chromium-desktop-partial');
   await page.goto('/app/index.html');
 
   // Check if the game output element is visible

@@ -2,7 +2,11 @@ import { test, expect } from '@playwright/test';
 import { PHASE } from '../src/state/game-state';
 
 test.describe('Renderer Screenshot Tests', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page }, testInfo) => {
+    // Only run these tests on the 'normal' project
+    if (testInfo.project.name !== 'chromium-desktop-partial') {
+      test.skip();
+    }
     // Navigate to our renderer test page
     await page.goto('http://localhost:5173/app/render-test.html');
     await page.waitForFunction(() => (window as any).renderState !== undefined);
