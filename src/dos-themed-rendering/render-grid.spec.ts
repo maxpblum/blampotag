@@ -46,7 +46,7 @@ describe('Grid Rendering', () => {
         
         expect(buffer[0]![0]!.backgroundColor).toBe("blue");
         expect(buffer[0]![0]!.color).toBe("red");
-        expect(buffer[0]![3]!.backgroundColor).toBe("transparent"); // Default
+        expect(buffer[0]![3]!.backgroundColor).toBe("var(--vga-black)"); // Default
     });
 
     it('should handle borders correctly', () => {

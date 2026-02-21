@@ -8,7 +8,7 @@ Blampotag is a DOS-themed, turn-based computer game version of Tag. It features 
 - **Runtime:** Static Web Page (Vanilla JS, no frameworks).
 - **Bundler/Dev Server:** Vite.
 - **Testing:** Jasmine (Unit tests located next to their respective source files).
-- **Styling:** CSS for "DOS/CRT" aesthetic (scanlines, VGA colors, IBM VGA 8x16 font).
+- **Styling:** CSS for "DOS" aesthetic (solid VGA colors, IBM VGA 8x16 font).
 - **Audio:** Web Audio API for PC-speaker style synthesis.
 
 ## 3. Architecture: Functional Core, Imperative Shell
@@ -44,7 +44,6 @@ Blampotag is a DOS-themed, turn-based computer game version of Tag. It features 
 - **Animations:** Procedural background animations of hearts and rainbows using the 16-color CGA/EGA palette.
 - **Clarity:** High-contrast highlights for the current player and the "It" player.
 - **Transitions:** Screen changes (e.g., Title -> Config -> Countdown) use "cool" DOS-era effects like blocky wipes or character-by-character fades. These are driven by `transitionProgress` in the `GameState`.
-- **CRT Effect:** CSS overlay for scanlines and subtle curvature/glow.
 
 ## 7. Audio System
 - **Synthesis:** Square/Triangle wave oscillators for "PC Speaker" crunch.

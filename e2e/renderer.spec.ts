@@ -66,6 +66,17 @@ test.describe('Renderer Screenshot Tests', () => {
     await expect(page.locator('#game-output')).toHaveScreenshot('round-it-turn.png');
   });
 
+  test('ROUND phase - with recent move highlight', async ({ page }) => {
+    await page.evaluate((state) => (window as any).renderState(state), {
+      ...baseState,
+      phase: PHASE.ROUND,
+      players: [PLAYER_1, PLAYER_2],
+      turnIndex: 1,
+      lastMove: { fromX: 2, fromY: 2, toX: 3, toY: 2 }
+    });
+    await expect(page.locator('#game-output')).toHaveScreenshot('recent-move.png');
+  });
+
   test('ROUND phase - non-IT turn', async ({ page }) => {
     await page.evaluate((state) => (window as any).renderState(state), {
       ...baseState,

@@ -1,6 +1,6 @@
 /// <reference types="jasmine" />
 import { rootReducer } from './reducer';
-import { PHASE } from './game-state';
+import { PHASE, AVAILABLE_EMOJIS } from './game-state';
 import type { GameState, Player } from './game-state';
 
 describe('rootReducer', () => {
@@ -71,6 +71,33 @@ describe('rootReducer', () => {
             expect(next.phase).toBe(PHASE.CONFIRMATION);
             expect(next.pendingPlayerName).toBe("");
         });
+
+        it('should skip used emojis when navigating with arrows', () => {
+            const state = createTestState({ 
+                phase: PHASE.CHOOSE_PLAYER_AVATAR,
+                players: [{ ...PLAYER_1, emoji: AVAILABLE_EMOJIS[1] }], // 🧛 is used
+                avatarSelectionIndex: 0 // 🧙
+            });
+            
+            // From index 0, ArrowRight should skip index 1 and go to index 2
+            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'ArrowRight' });
+            expect(next.avatarSelectionIndex).toBe(2);
+            
+            // From index 2, ArrowLeft should skip index 1 and go back to index 0
+            const back = rootReducer(next, { type: 'KEY_PRESS', key: 'ArrowLeft' });
+            expect(back.avatarSelectionIndex).toBe(0);
+        });
+
+        it('should NOT allow selecting a used emoji if Enter is pressed on one', () => {
+            const state = createTestState({ 
+                phase: PHASE.CHOOSE_PLAYER_AVATAR,
+                players: [{ ...PLAYER_1, emoji: AVAILABLE_EMOJIS[0] }], // 🧙 is used
+                avatarSelectionIndex: 0 // Selection is on 🧙
+            });
+            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'Enter' });
+            expect(next.players.length).toBe(1); // No new player added
+            expect(next.phase).toBe(PHASE.CHOOSE_PLAYER_AVATAR);
+        });
     });
 
     describe('PHASE.CONFIRMATION', () => {
@@ -96,7 +123,7 @@ describe('rootReducer', () => {
     });
 
     describe('PHASE.ROUND', () => {
-        it('should move current player and change turn', () => {
+        it('should move current player and change turn and track lastMove', () => {
             const state = createTestState({ 
                 phase: PHASE.ROUND, 
                 players: [PLAYER_1, PLAYER_2], 
@@ -105,6 +132,7 @@ describe('rootReducer', () => {
             const next = rootReducer(state, { type: 'MOVE', dx: 1, dy: 0 });
             expect(next.players[0].x).toBe(3);
             expect(next.turnIndex).toBe(1);
+            expect(next.lastMove).toEqual({ fromX: 2, fromY: 2, toX: 3, toY: 2 });
         });
 
         it('should NOT move if it hits a wall', () => {
@@ -119,16 +147,18 @@ describe('rootReducer', () => {
             expect(next.turnIndex).toBe(0); // Turn should not change if move rejected
         });
 
-        it('should transition to FIRST_TURN_PROMPT if moveCount is 0', () => {
+        it('should transition to FIRST_TURN_PROMPT if moveCount is 0 and NOT reset transitionProgress', () => {
             const newPlayer = { ...PLAYER_1, moveCount: 0 };
             const state = createTestState({ 
                 phase: PHASE.ROUND, 
                 players: [newPlayer, PLAYER_2], 
-                turnIndex: 0 
+                turnIndex: 0,
+                transitionProgress: 1.0 
             });
             const next = rootReducer(state, { type: 'MOVE', dx: 1, dy: 0 });
             expect(next.phase).toBe(PHASE.FIRST_TURN_PROMPT);
             expect(next.pendingMove).toEqual({ dx: 1, dy: 0 });
+            expect(next.transitionProgress).toBe(1.0); // Should not be 0.0
         });
 
         it('should transition to TAGGING_WINDOW if "It" lands on another player', () => {

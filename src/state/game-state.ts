@@ -39,6 +39,7 @@ export type GameState = {
     readonly avatarSelectionIndex: number;
     readonly pendingPlayerName: string;
     readonly pendingMove?: { dx: number; dy: number };
+    readonly lastMove?: { fromX: number; fromY: number; toX: number; toY: number };
 };
 
 export const AVAILABLE_EMOJIS = ["🧙", "🧛", "👻", "🤖", "👽", "🦄", "🐙", "🦖", "🥷", "🧝"];

@@ -73,27 +73,51 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
             }
 
             if (state.phase === PHASE.CHOOSE_PLAYER_AVATAR) {
+                const usedEmojis = new Set(state.players.map(p => p.emoji));
+                const availableIndices = AVAILABLE_EMOJIS
+                    .map((_, i) => i)
+                    .filter(i => !usedEmojis.has(AVAILABLE_EMOJIS[i]));
+
+                if (availableIndices.length === 0) return state; // Should not happen with current game logic
+
                 if (event.key === 'ArrowLeft') {
-                    return { ...state, avatarSelectionIndex: (state.avatarSelectionIndex - 1 + AVAILABLE_EMOJIS.length) % AVAILABLE_EMOJIS.length };
+                    let currentIdxInAvailable = availableIndices.indexOf(state.avatarSelectionIndex);
+                    // If not found, start from nearest (or 0)
+                    if (currentIdxInAvailable === -1) currentIdxInAvailable = 0;
+                    const nextIdxInAvailable = (currentIdxInAvailable - 1 + availableIndices.length) % availableIndices.length;
+                    return { ...state, avatarSelectionIndex: availableIndices[nextIdxInAvailable] };
                 }
                 if (event.key === 'ArrowRight') {
-                    return { ...state, avatarSelectionIndex: (state.avatarSelectionIndex + 1) % AVAILABLE_EMOJIS.length };
+                    let currentIdxInAvailable = availableIndices.indexOf(state.avatarSelectionIndex);
+                    // If not found, start from nearest (or 0)
+                    if (currentIdxInAvailable === -1) currentIdxInAvailable = 0;
+                    const nextIdxInAvailable = (currentIdxInAvailable + 1) % availableIndices.length;
+                    return { ...state, avatarSelectionIndex: availableIndices[nextIdxInAvailable] };
                 }
                 if (event.key === 'Enter') {
+                    const selectedEmoji = AVAILABLE_EMOJIS[state.avatarSelectionIndex];
+                    if (usedEmojis.has(selectedEmoji)) return state; // Safety check
+
                     const newPlayer: Player = {
                         id: crypto.randomUUID(),
                         name: state.pendingPlayerName,
-                        emoji: AVAILABLE_EMOJIS[state.avatarSelectionIndex] || "👤",
+                        emoji: selectedEmoji || "👤",
                         x: 0, y: 0, startOfTurnX: 0, startOfTurnY: 0,
                         isIt: false,
                         moveCount: 0
                     };
+
+                    const nextUsedEmojis = new Set([...state.players, newPlayer].map(p => p.emoji));
+                    const nextAvailableIndices = AVAILABLE_EMOJIS
+                        .map((_, i) => i)
+                        .filter(i => !nextUsedEmojis.has(AVAILABLE_EMOJIS[i]));
+
                     return { 
                         ...state, 
                         players: [...state.players, newPlayer],
                         phase: PHASE.CONFIRMATION,
                         pendingPlayerName: "",
-                        avatarSelectionIndex: 0
+                        avatarSelectionIndex: nextAvailableIndices[0] || 0
                     };
                 }
             }
@@ -185,7 +209,7 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                 
                 if (canMove2) {
                     return {
-                        ...transitionTo(state, PHASE.FIRST_TURN_PROMPT),
+                        ...setPhase(state, PHASE.FIRST_TURN_PROMPT),
                         pendingMove: { dx: event.dx, dy: event.dy }
                     };
                 }
@@ -204,6 +228,8 @@ function executeMove(state: GameState, dx: number, dy: number): GameState {
 
     const nx = currentPlayer.x + dx;
     const ny = currentPlayer.y + dy;
+
+    const lastMove = { fromX: currentPlayer.x, fromY: currentPlayer.y, toX: nx, toY: ny };
 
     const nextPlayers = state.players.map((p, idx) => {
         if (idx === state.turnIndex) {
@@ -226,7 +252,8 @@ function executeMove(state: GameState, dx: number, dy: number): GameState {
                 ...state, 
                 players: nextPlayers, 
                 phase: PHASE.TAGGING_WINDOW, 
-                countdownTimer: 2000 
+                countdownTimer: 2000,
+                lastMove
             };
         }
     }
@@ -235,7 +262,8 @@ function executeMove(state: GameState, dx: number, dy: number): GameState {
         ...state, 
         players: nextPlayers, 
         phase: PHASE.ROUND,
-        turnIndex: (state.turnIndex + 1) % state.players.length 
+        turnIndex: (state.turnIndex + 1) % state.players.length,
+        lastMove
     };
 }
 
@@ -245,6 +273,13 @@ function transitionTo(state: GameState, nextPhase: PHASE): GameState {
         oldPhase: state.phase,
         phase: nextPhase,
         transitionProgress: 0.0
+    };
+}
+
+function setPhase(state: GameState, nextPhase: PHASE): GameState {
+    return {
+        ...state,
+        phase: nextPhase
     };
 }
 
@@ -284,6 +319,7 @@ function startNewRound(state: GameState): GameState {
         ...transitionTo(state, PHASE.PRE_GAME_COUNTDOWN),
         players: nextPlayers,
         countdownTimer: 3000,
-        turnIndex: 0
+        turnIndex: 0,
+        lastMove: undefined
     };
 }

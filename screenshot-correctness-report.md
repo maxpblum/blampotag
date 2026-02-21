@@ -1,13 +1,11 @@
 # Screenshot Correctness Report: Blampotag
 
 ## Assessment Summary
-The rendering successfully achieves the intended "DOS-themed" aesthetic with CRT scanlines, a VGA-style palette, and FIGlet ASCII art. However, the implementation suffers from significant **responsiveness and layout issues** on smaller screen sizes (mobile and partial desktop windows), primarily due to a fixed 100-character buffer width.
+The rendering successfully achieves the intended "DOS-themed" aesthetic with a solid VGA-style palette and FIGlet ASCII art. However, the implementation suffers from significant **responsiveness and layout issues** on smaller screen sizes (mobile and partial desktop windows), primarily due to a fixed 100-character buffer width.
 
 ## Correct Aspects
-- **Aesthetic Alignment**: The "IBM VGA" font and scanline overlay correctly evoke a CRT monitor feel.
 - **Color Palette**: The use of VGA colors (Cyan for title, Yellow for setup, White for input) is consistent with the project's technical goals.
 - **ASCII Art**: The FIGlet "BLAMPOTAG" title art is rendered correctly using box-drawing characters and the intended color.
-- **Scanlines/CRT Effect**: The `flicker` animation and scanline gradients are visible and add to the immersion without obscuring the text.
 - **Legibility (Desktop)**: On a 1920x1080 viewport, the layout is clear, centered, and readable.
 
 ## Problems and Incorrect Aspects
@@ -29,4 +27,4 @@ The rendering successfully achieves the intended "DOS-themed" aesthetic with CRT
 1.  **Dynamic Buffer Size**: Adjust the buffer width based on the current `window.innerWidth` or at least use a smaller default (e.g., 80 chars) with a minimum width requirement.
 2.  **Center-Aligned Rendering**: Modify `writeStringToBuffer` or `renderPhase` to calculate `x` coordinates relative to the buffer's center (e.g., `(bufferWidth - textWidth) / 2`).
 3.  **Responsive Font Sizing**: Use `vw` units for font-size or a media query to shrink the font on mobile so the 100-character buffer can fit within the viewport.
-4.  **Full-Screen Background**: Ensure `html` and `body` have `background-color: var(--vga-black)` and that the CRT effect covers the entire scrollable area if overflow is permitted.
+4.  **Full-Screen Background**: Ensure `html` and `body` have `background-color: var(--vga-black)` and that it covers the entire scrollable area if overflow is permitted.

@@ -7,7 +7,9 @@ export function overlayHearts(buffer: CharacterBuffer, time: number): CharacterB
     for (let i = 0; i < count; i++) {
         const x = Math.floor(((i * 123.456 + time / 1000 * 10) % 80));
         const y = Math.floor(((i * 789.012 + time / 1000 * 5) % 25));
-        nextBuffer = writeStringToBuffer(nextBuffer, "❤", x, y, "var(--vga-bright-red)");
+        const cell = buffer[y]?.[x];
+        const bgColor = cell ? cell.backgroundColor : "var(--vga-black)";
+        nextBuffer = writeStringToBuffer(nextBuffer, "❤", x, y, "var(--vga-bright-red)", bgColor);
     }
     return nextBuffer;
 }
@@ -26,7 +28,7 @@ export function overlayRainbow(buffer: CharacterBuffer, time: number): Character
         row.map((cell, x) => {
             if (cell.char === " ") {
                 const colorIdx = Math.floor((x + y + time / 100) % rainbowColors.length);
-                return { char: "░", color: rainbowColors[colorIdx] || "white" };
+                return { ...cell, char: "░", color: rainbowColors[colorIdx] || "white" };
             }
             return cell;
         })

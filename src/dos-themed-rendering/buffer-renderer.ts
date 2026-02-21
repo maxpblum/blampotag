@@ -3,7 +3,8 @@ import { BOX_CHARS } from "./ascii-assets";
 export type Cell = {
     readonly char: string;
     readonly color: string;
-    readonly backgroundColor?: string;
+    readonly backgroundColor: string;
+    readonly fontSize?: string;
     readonly isWide?: boolean; // If true, this character takes up 2 monospaced slots
 };
 
@@ -14,7 +15,8 @@ export function createBuffer(width: number, height: number): CharacterBuffer {
         Array.from({ length: width }, () => ({
             char: " ",
             color: "var(--vga-light-gray)",
-            backgroundColor: "transparent",
+            backgroundColor: "var(--vga-black)",
+            fontSize: undefined,
         }))
     );
 }
@@ -25,7 +27,8 @@ export function writeStringToBuffer(
     x: number,
     y: number,
     color: string = "var(--vga-light-gray)",
-    backgroundColor: string = "transparent"
+    backgroundColor: string = "var(--vga-black)",
+    fontSize?: string
 ): CharacterBuffer {
     const nextBuffer = buffer.map((row) => [...row]);
     const lines = text.split("\n");
@@ -45,11 +48,11 @@ export function writeStringToBuffer(
             // Basic heuristic for double-width characters (emojis)
             const isWide = char.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji_Presentation}/u) !== null;
             
-            row[currentX] = { char, color, backgroundColor, isWide };
+            row[currentX] = { char, color, backgroundColor, fontSize, isWide };
             
             // If it's wide, we must effectively "nullify" the next cell to prevent overlap/shift
             if (isWide && currentX + 1 < row.length) {
-                row[currentX + 1] = { char: "", color, backgroundColor, isWide: false }; // Empty string won't render
+                row[currentX + 1] = { char: "", color, backgroundColor, fontSize, isWide: false }; // Empty string won't render
                 currentX += 2;
             } else {
                 currentX += 1;
@@ -66,7 +69,7 @@ export function drawBox(
     width: number,
     height: number,
     color: string = "var(--vga-light-gray)",
-    backgroundColor: string = "transparent"
+    backgroundColor: string = "var(--vga-black)"
 ): CharacterBuffer {
     let nextBuffer = buffer;
     
@@ -94,27 +97,54 @@ export function renderToContainer(buffer: CharacterBuffer, container: HTMLElemen
         const row = buffer[y];
         if (!row) continue;
         let currentRowHtml = "";
-        let currentColor = "";
-        let currentBgColor = "";
+        let x = 0;
         
-        for (let x = 0; x < row.length; x++) {
+        while (x < row.length) {
             const cell = row[x];
-            if (!cell || cell.char === "") continue; // Skip wide char tails
-            
-            const bgColor = cell.backgroundColor || "transparent";
-            if (cell.color !== currentColor || bgColor !== currentBgColor) {
-                if (currentColor !== "" || currentBgColor !== "") currentRowHtml += "</span>";
-                currentRowHtml += `<span style="color: ${cell.color}; background-color: ${bgColor}">`;
-                currentColor = cell.color;
-                currentBgColor = bgColor;
+            if (!cell || cell.char === "") {
+                x++;
+                continue;
             }
-            const replacements: Record<string, string> = {
-                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
-            };
-            const char = cell.char === " " ? "&nbsp;" : cell.char.replace(/[&<>"']/g, m => replacements[m] || m);
-            currentRowHtml += char;
+            
+            const color = cell.color;
+            const bgColor = cell.backgroundColor;
+            const fontSize = cell.fontSize;
+            
+            // Collect contiguous characters with the same style
+            let blockText = "";
+            let blockCharCount = 0;
+            let currentX = x;
+            
+            while (currentX < row.length) {
+                const nextCell = row[currentX];
+                if (!nextCell || nextCell.char === "") {
+                    // Wide character tail - shouldn't happen here due to skip, but handle for safety
+                    if (nextCell && nextCell.char === "") {
+                        currentX++;
+                    } else {
+                        break;
+                    }
+                    continue;
+                }
+                
+                const nextBg = nextCell.backgroundColor;
+                if (nextCell.color !== color || nextBg !== bgColor || nextCell.fontSize !== fontSize) {
+                    break;
+                }
+                
+                const replacements: Record<string, string> = {
+                    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+                };
+                const char = nextCell.char === " " ? "&nbsp;" : nextCell.char.replace(/[&<>"']/g, m => replacements[m] || m);
+                blockText += char;
+                blockCharCount += nextCell.isWide ? 2 : 1;
+                currentX++;
+            }
+            
+            const fontSizeStyle = fontSize ? `font-size: ${fontSize};` : "";
+            currentRowHtml += `<span style="color: ${color}; background-color: ${bgColor}; ${fontSizeStyle} display: inline-block; width: ${blockCharCount}ch;">${blockText}</span>`;
+            x = currentX;
         }
-        if (currentColor !== "" || currentBgColor !== "") currentRowHtml += "</span>";
         html += currentRowHtml + "\n";
     }
     if (container.innerHTML !== html) {

@@ -7,8 +7,8 @@ import { getBlockyWipeBuffer } from "../dos-themed-rendering/transitions";
 import { overlayHearts, overlayRainbow } from "../dos-themed-rendering/animations";
 import type { AudioEffectPlayer } from "../audio/game-audio";
 
-const GRID_CELL_WIDTH = 4;
-const GRID_CELL_HEIGHT = 2;
+const GRID_CELL_WIDTH = 8;
+const GRID_CELL_HEIGHT = 3;
 
 export class GameRenderer {
     constructor(
@@ -53,12 +53,6 @@ export class GameRenderer {
             }
         }
 
-        // Check for movement (assuming turnIndex changes or coordinates change)
-        // This is a bit complex as state alone doesn't directly tell us a move happened,
-        // but comparing coordinates of players might.
-        // For simplicity, let's compare turnIndex or coordinates.
-        // Actually, the main-loop had audio.beep(400) on movement.
-        // We can check if any player moved.
         const playerMoved = state.players.some((p, i) => {
             const prevP = previousState.players[i];
             return prevP && (p.x !== prevP.x || p.y !== prevP.y);
@@ -69,8 +63,39 @@ export class GameRenderer {
         }
     }
 
-    private getCellBackgroundColor(gx: number, gy: number): string {
+    private getCellBackgroundColor(gx: number, gy: number, state: GameState): string {
         const isDark = (gx + gy) % 2 === 1;
+        
+        // Highlight "It" player's square
+        const itPlayer = state.players.find(p => p.isIt);
+        if (itPlayer && itPlayer.x === gx && itPlayer.y === gy) {
+            return "var(--vga-brown)"; // A dark red/orangeish color
+        }
+
+        // Highlight last move "from" and "to"
+        if (state.lastMove) {
+            if (state.lastMove.fromX === gx && state.lastMove.fromY === gy) {
+                return "var(--vga-blue)";
+            }
+            if (state.lastMove.toX === gx && state.lastMove.toY === gy) {
+                return "var(--vga-bright-blue)";
+            }
+        }
+
+        // Highlight perk targets
+        if (state.phase === PHASE.FIRST_TURN_PROMPT && state.pendingMove) {
+            const currentPlayer = state.players[state.turnIndex];
+            if (currentPlayer) {
+                const nx = currentPlayer.x + state.pendingMove.dx;
+                const ny = currentPlayer.y + state.pendingMove.dy;
+                const nx2 = currentPlayer.x + state.pendingMove.dx * 2;
+                const ny2 = currentPlayer.y + state.pendingMove.dy * 2;
+
+                if (gx === nx && gy === ny) return "var(--vga-magenta)";
+                if (gx === nx2 && gy === ny2) return "var(--vga-magenta)";
+            }
+        }
+
         return isDark ? "var(--vga-black)" : "var(--vga-dark-gray)";
     }
 
@@ -106,7 +131,7 @@ export class GameRenderer {
             buffer = writeStringToBuffer(buffer, underline, getCenterX(underline), 13);
             
             const emojiRow = AVAILABLE_EMOJIS.map((e, i) => i === avatarSelectionIndex ? `[${e}]` : ` ${e} `).join(" ");
-            buffer = writeStringToBuffer(buffer, emojiRow, getCenterX(emojiRow), 16);
+            buffer = writeStringToBuffer(buffer, emojiRow, getCenterX(emojiRow), 16, "var(--vga-white)", "var(--vga-black)", "1.5em");
             
             const controlsText = "Use ARROWS to pick, ENTER to confirm";
             buffer = writeStringToBuffer(buffer, controlsText, getCenterX(controlsText), 19);
@@ -143,16 +168,16 @@ export class GameRenderer {
         } else if (phase === PHASE.ROUND || phase === PHASE.TAGGING_WINDOW || phase === PHASE.PLAYER_SELECTION || phase === PHASE.CELEBRATION || phase === PHASE.RESET || phase === PHASE.FIRST_TURN_PROMPT) {
             const boardCharWidth = boardConfig.width * GRID_CELL_WIDTH;
             const boardCharHeight = boardConfig.height * GRID_CELL_HEIGHT;
-            const boardX = Math.floor((bufferWidth - (boardCharWidth + 20)) / 2); // Center board with side info area
-            const boardY = 12;
+            const boardX = Math.floor((bufferWidth - boardCharWidth) / 2); 
+            const boardY = 10;
             
             // Draw board border
             buffer = drawBox(buffer, boardX - 1, boardY - 1, boardCharWidth + 2, boardCharHeight + 2, "var(--vga-light-gray)");
             
-            // Draw checkerboard
+            // Draw checkerboard and highlights
             for (let gy = 0; gy < boardConfig.height; gy++) {
                 for (let gx = 0; gx < boardConfig.width; gx++) {
-                    const bgColor = this.getCellBackgroundColor(gx, gy);
+                    const bgColor = this.getCellBackgroundColor(gx, gy, state);
                     
                     for (let cy = 0; cy < GRID_CELL_HEIGHT; cy++) {
                         for (let cx = 0; cx < GRID_CELL_WIDTH; cx++) {
@@ -167,37 +192,52 @@ export class GameRenderer {
                 if (player.isIt) color = "var(--vga-bright-red)";
                 else if (idx === turnIndex && phase === PHASE.ROUND) color = "var(--vga-bright-green)";
                 
-                const bgColor = this.getCellBackgroundColor(player.x, player.y);
+                const bgColor = this.getCellBackgroundColor(player.x, player.y, state);
                 
                 // Center emoji in cell
                 const px = boardX + player.x * GRID_CELL_WIDTH + Math.floor((GRID_CELL_WIDTH - 2) / 2);
                 const py = boardY + player.y * GRID_CELL_HEIGHT + Math.floor((GRID_CELL_HEIGHT - 1) / 2);
-                buffer = writeStringToBuffer(buffer, player.emoji, px, py, color, bgColor);
+                // Make emojis much bigger
+                buffer = writeStringToBuffer(buffer, player.emoji, px, py, color, bgColor, "2.2em");
             });
 
             const currentPlayer = players[turnIndex];
+            const statusY = boardY + boardCharHeight + 2;
+
             if (phase === PHASE.TAGGING_WINDOW) {
-                buffer = writeStringToBuffer(buffer, "!!! TAG !!!", boardX + boardCharWidth + 4, boardY, "var(--vga-bright-red)");
-                buffer = writeStringToBuffer(buffer, "PRESS ENTER!", boardX + boardCharWidth + 4, boardY + 1, "var(--vga-bright-yellow)");
-                buffer = writeStringToBuffer(buffer, `TIME: ${(countdownTimer/1000).toFixed(1)}s`, boardX + boardCharWidth + 4, boardY + 3);
+                const text1 = "!!! TAG !!!";
+                const text2 = "PRESS ENTER!";
+                const text3 = `TIME: ${(countdownTimer/1000).toFixed(1)}s`;
+                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-red)");
+                buffer = writeStringToBuffer(buffer, text2, getCenterX(text2), statusY + 1, "var(--vga-bright-yellow)");
+                buffer = writeStringToBuffer(buffer, text3, getCenterX(text3), statusY + 2);
             } else if (phase === PHASE.PLAYER_SELECTION && currentPlayer) {
-                buffer = writeStringToBuffer(buffer, "CHOOSE TARGET:", boardX + boardCharWidth + 4, boardY, "var(--vga-bright-cyan)");
+                const text1 = "CHOOSE TARGET:";
+                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-cyan)");
                 const targets = players.filter((p, idx) => idx !== turnIndex && p.x === currentPlayer.x && p.y === currentPlayer.y);
                 targets.forEach((p, i) => {
-                    buffer = writeStringToBuffer(buffer, `${i + 1}: ${p.emoji} ${p.name}`, boardX + boardCharWidth + 4, boardY + 2 + i);
+                    const playerText = `${i + 1}: ${p.emoji} ${p.name}`;
+                    buffer = writeStringToBuffer(buffer, playerText, getCenterX(playerText), statusY + 2 + i);
                 });
             } else if (phase === PHASE.FIRST_TURN_PROMPT && currentPlayer) {
-                buffer = writeStringToBuffer(buffer, "FIRST TURN PERK!", boardX + boardCharWidth + 4, boardY, "var(--vga-bright-yellow)");
-                buffer = writeStringToBuffer(buffer, "MOVE 2 SPACES?", boardX + boardCharWidth + 4, boardY + 1, "var(--vga-white)");
-                buffer = writeStringToBuffer(buffer, "PRESS Y / N", boardX + boardCharWidth + 4, boardY + 3, "var(--vga-bright-green)");
+                const text1 = "FIRST TURN PERK!";
+                const text2 = "MOVE 2 SPACES?";
+                const text3 = "PRESS Y / N";
+                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-yellow)");
+                buffer = writeStringToBuffer(buffer, text2, getCenterX(text2), statusY + 1, "var(--vga-white)");
+                buffer = writeStringToBuffer(buffer, text3, getCenterX(text3), statusY + 3, "var(--vga-bright-green)");
             } else if (currentPlayer && phase === PHASE.ROUND) {
-                buffer = writeStringToBuffer(buffer, "CURRENT TURN:", boardX + boardCharWidth + 4, boardY, "var(--vga-bright-green)");
-                buffer = writeStringToBuffer(buffer, `${currentPlayer.emoji} ${currentPlayer.name}`, boardX + boardCharWidth + 4, boardY + 1);
+                const text1 = "CURRENT TURN:";
+                const text2 = `${currentPlayer.emoji} ${currentPlayer.name}`;
+                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-green)");
+                buffer = writeStringToBuffer(buffer, text2, getCenterX(text2), statusY + 1);
                 if (currentPlayer.isIt) {
-                    buffer = writeStringToBuffer(buffer, "YOU ARE IT!", boardX + boardCharWidth + 4, boardY + 3, "var(--vga-bright-red)");
+                    const text3 = "YOU ARE IT!";
+                    buffer = writeStringToBuffer(buffer, text3, getCenterX(text3), statusY + 3, "var(--vga-bright-red)");
                 }
             } else if (phase === PHASE.CELEBRATION) {
-                buffer = writeStringToBuffer(buffer, "SUCCESSFUL TAG!", boardX + boardCharWidth + 4, boardY, "var(--vga-bright-magenta)");
+                const text1 = "SUCCESSFUL TAG!";
+                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-magenta)");
             }
         }
         
