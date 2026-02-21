@@ -4,9 +4,12 @@ import { writeStringToBuffer } from "./buffer-renderer";
 export function overlayHearts(buffer: CharacterBuffer, time: number): CharacterBuffer {
     let nextBuffer = buffer;
     const count = 5;
+    const height = buffer.length;
+    const width = buffer[0]?.length || 0;
+    
     for (let i = 0; i < count; i++) {
-        const x = Math.floor(((i * 123.456 + time / 1000 * 10) % 80));
-        const y = Math.floor(((i * 789.012 + time / 1000 * 5) % 25));
+        const x = Math.floor(((i * 123.456 + time / 1000 * 10) % width));
+        const y = Math.floor(((i * 789.012 + time / 1000 * 5) % height));
         const cell = buffer[y]?.[x];
         const bgColor = cell ? cell.backgroundColor : "var(--vga-black)";
         nextBuffer = writeStringToBuffer(nextBuffer, "❤", x, y, "var(--vga-bright-red)", bgColor);
