@@ -85,7 +85,8 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                         name: state.pendingPlayerName,
                         emoji: AVAILABLE_EMOJIS[state.avatarSelectionIndex] || "👤",
                         x: 0, y: 0, startOfTurnX: 0, startOfTurnY: 0,
-                        isIt: false
+                        isIt: false,
+                        moveCount: 0
                     };
                     return { 
                         ...state, 
@@ -94,6 +95,18 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                         pendingPlayerName: "",
                         avatarSelectionIndex: 0
                     };
+                }
+            }
+
+            if (state.phase === PHASE.FIRST_TURN_PROMPT) {
+                const currentPlayer = state.players[state.turnIndex];
+                if (!currentPlayer || !state.pendingMove) return state;
+                
+                if (event.key === 'y' || event.key === 'Y') {
+                    return executeMove(state, state.pendingMove.dx * 2, state.pendingMove.dy * 2);
+                }
+                if (event.key === 'n' || event.key === 'N') {
+                    return executeMove(state, state.pendingMove.dx, state.pendingMove.dy);
                 }
             }
 
@@ -156,6 +169,7 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
             if (state.phase !== PHASE.ROUND || state.transitionProgress < 1.0) return state;
             const currentPlayerMove = state.players[state.turnIndex];
             if (!currentPlayerMove) return state;
+
             const nx = currentPlayerMove.x + event.dx;
             const ny = currentPlayerMove.y + event.dy;
             
@@ -163,30 +177,66 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                 return state;
             }
 
-            const nextPlayers = state.players.map((p, idx) => {
-                if (idx === state.turnIndex) {
-                    return { ...p, x: nx, y: ny, startOfTurnX: p.x, startOfTurnY: p.y };
-                }
-                return p;
-            });
-
-            if (currentPlayerMove.isIt) {
-                const collided = nextPlayers.some((p, idx) => idx !== state.turnIndex && p.x === nx && p.y === ny);
-                if (collided) {
-                    return { 
-                        ...state, 
-                        players: nextPlayers, 
-                        phase: PHASE.TAGGING_WINDOW, 
-                        countdownTimer: 2000 
+            // First turn perk check
+            if (currentPlayerMove.moveCount === 0) {
+                const nx2 = currentPlayerMove.x + event.dx * 2;
+                const ny2 = currentPlayerMove.y + event.dy * 2;
+                const canMove2 = nx2 >= 0 && nx2 < state.boardConfig.width && ny2 >= 0 && ny2 < state.boardConfig.height;
+                
+                if (canMove2) {
+                    return {
+                        ...transitionTo(state, PHASE.FIRST_TURN_PROMPT),
+                        pendingMove: { dx: event.dx, dy: event.dy }
                     };
                 }
             }
 
-            return { ...state, players: nextPlayers, turnIndex: (state.turnIndex + 1) % state.players.length };
+            return executeMove(state, event.dx, event.dy);
 
         default:
             return state;
     }
+}
+
+function executeMove(state: GameState, dx: number, dy: number): GameState {
+    const currentPlayer = state.players[state.turnIndex];
+    if (!currentPlayer) return state;
+
+    const nx = currentPlayer.x + dx;
+    const ny = currentPlayer.y + dy;
+
+    const nextPlayers = state.players.map((p, idx) => {
+        if (idx === state.turnIndex) {
+            return { 
+                ...p, 
+                x: nx, 
+                y: ny, 
+                startOfTurnX: p.x, 
+                startOfTurnY: p.y,
+                moveCount: p.moveCount + 1
+            };
+        }
+        return p;
+    });
+
+    if (currentPlayer.isIt) {
+        const collided = nextPlayers.some((p, idx) => idx !== state.turnIndex && p.x === nx && p.y === ny);
+        if (collided) {
+            return { 
+                ...state, 
+                players: nextPlayers, 
+                phase: PHASE.TAGGING_WINDOW, 
+                countdownTimer: 2000 
+            };
+        }
+    }
+
+    return { 
+        ...state, 
+        players: nextPlayers, 
+        phase: PHASE.ROUND,
+        turnIndex: (state.turnIndex + 1) % state.players.length 
+    };
 }
 
 function transitionTo(state: GameState, nextPhase: PHASE): GameState {
@@ -199,7 +249,10 @@ function transitionTo(state: GameState, nextPhase: PHASE): GameState {
 }
 
 function startNewRound(state: GameState): GameState {
-    const nextPlayers = [...state.players];
+    const nextPlayers = state.players.map(p => ({
+        ...p,
+        moveCount: 0
+    }));
     const occupied = new Set<string>();
     
     // Position non-It players first

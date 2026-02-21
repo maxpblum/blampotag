@@ -4,6 +4,7 @@ export enum PHASE {
     CONFIRMATION = "CONFIRMATION",
     PRE_GAME_COUNTDOWN = "PRE_GAME_COUNTDOWN",
     ROUND = "ROUND",
+    FIRST_TURN_PROMPT = "FIRST_TURN_PROMPT",
     TAGGING_WINDOW = "TAGGING_WINDOW",
     PLAYER_SELECTION = "PLAYER_SELECTION",
     CELEBRATION = "CELEBRATION",
@@ -19,6 +20,7 @@ export type Player = {
     readonly startOfTurnX: number;
     readonly startOfTurnY: number;
     readonly isIt: boolean;
+    readonly moveCount: number;
 };
 
 export type BoardConfig = {
@@ -36,6 +38,7 @@ export type GameState = {
     readonly oldPhase: PHASE | null;
     readonly avatarSelectionIndex: number;
     readonly pendingPlayerName: string;
+    readonly pendingMove?: { dx: number; dy: number };
 };
 
 export const AVAILABLE_EMOJIS = ["🧙", "🧛", "👻", "🤖", "👽", "🦄", "🐙", "🦖", "🥷", "🧝"];

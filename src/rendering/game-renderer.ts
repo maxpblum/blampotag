@@ -135,7 +135,7 @@ export class GameRenderer {
             const count = Math.ceil(countdownTimer / 1000);
             const art = COUNTDOWN_ART[count] || "";
             buffer = writeStringToBuffer(buffer, art, getCenterX(art), 15, "var(--vga-bright-yellow)");
-        } else if (phase === PHASE.ROUND || phase === PHASE.TAGGING_WINDOW || phase === PHASE.PLAYER_SELECTION || phase === PHASE.CELEBRATION || phase === PHASE.RESET) {
+        } else if (phase === PHASE.ROUND || phase === PHASE.TAGGING_WINDOW || phase === PHASE.PLAYER_SELECTION || phase === PHASE.CELEBRATION || phase === PHASE.RESET || phase === PHASE.FIRST_TURN_PROMPT) {
             const boardCharWidth = boardConfig.width * GRID_CELL_WIDTH;
             const boardCharHeight = boardConfig.height * GRID_CELL_HEIGHT;
             const boardX = Math.floor((bufferWidth - (boardCharWidth + 20)) / 2); // Center board with side info area
@@ -181,6 +181,10 @@ export class GameRenderer {
                 targets.forEach((p, i) => {
                     buffer = writeStringToBuffer(buffer, `${i + 1}: ${p.emoji} ${p.name}`, boardX + boardCharWidth + 4, boardY + 2 + i);
                 });
+            } else if (phase === PHASE.FIRST_TURN_PROMPT && currentPlayer) {
+                buffer = writeStringToBuffer(buffer, "FIRST TURN PERK!", boardX + boardCharWidth + 4, boardY, "var(--vga-bright-yellow)");
+                buffer = writeStringToBuffer(buffer, "MOVE 2 SPACES?", boardX + boardCharWidth + 4, boardY + 1, "var(--vga-white)");
+                buffer = writeStringToBuffer(buffer, "PRESS Y / N", boardX + boardCharWidth + 4, boardY + 3, "var(--vga-bright-green)");
             } else if (currentPlayer && phase === PHASE.ROUND) {
                 buffer = writeStringToBuffer(buffer, "CURRENT TURN:", boardX + boardCharWidth + 4, boardY, "var(--vga-bright-green)");
                 buffer = writeStringToBuffer(buffer, `${currentPlayer.emoji} ${currentPlayer.name}`, boardX + boardCharWidth + 4, boardY + 1);
