@@ -8,7 +8,11 @@ const mockAudio = {
     playMove: () => {},
     playTag: () => {},
     playSelect: () => {},
-    playFanfare: () => {}
+    playFanfare: () => {},
+    playSetupMusic: () => {},
+    playGameMusic: () => {},
+    playTensionMusic: () => {},
+    stopMusic: () => {}
 } as any;
 
 (window as any).renderState = (state: GameState, previousState: GameState | null = null, totalTime: number = 0) => {

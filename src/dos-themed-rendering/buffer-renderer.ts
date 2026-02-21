@@ -141,8 +141,15 @@ export function renderToContainer(buffer: CharacterBuffer, container: HTMLElemen
                 currentX++;
             }
             
-            const fontSizeStyle = fontSize ? `font-size: ${fontSize};` : "";
-            currentRowHtml += `<span style="color: ${color}; background-color: ${bgColor}; ${fontSizeStyle} display: inline-block; width: ${blockCharCount}ch;">${blockText}</span>`;
+            const innerStyle = fontSize ? `font-size: ${fontSize};` : "";
+            const outerStyle = `color: ${color}; background-color: ${bgColor}; display: inline-block; width: ${blockCharCount}ch; vertical-align: middle; line-height: 1; text-align: center; overflow: visible;`;
+            if (fontSize) {
+                // We wrap the large character in a fixed-width container that matches the character's slot in the grid.
+                // This prevents the font-size from pushing other characters.
+                currentRowHtml += `<span style="${outerStyle}"><span style="${innerStyle} display: inline-block; width: 100%; height: 100%; line-height: 0.5;">${blockText}</span></span>`;
+            } else {
+                currentRowHtml += `<span style="${outerStyle}">${blockText}</span>`;
+            }
             x = currentX;
         }
         html += currentRowHtml + "\n";

@@ -40,10 +40,14 @@ export class GameRenderer {
     }
 
     private triggerAudioEffects(state: GameState, previousState: GameState | null): void {
-        if (!previousState) return;
+        if (!previousState) {
+            this.updateMusic(state.phase);
+            return;
+        }
 
         // Check for phase transitions
         if (state.phase !== previousState.phase) {
+            this.updateMusic(state.phase);
             if (state.phase === PHASE.CELEBRATION) {
                 this.audio.playFanfare();
             } else if (state.phase === PHASE.TAGGING_WINDOW) {
@@ -63,9 +67,58 @@ export class GameRenderer {
         }
     }
 
+    private currentMusicType: string | null = null;
+    private updateMusic(phase: PHASE): void {
+        let nextMusicType: string | null = null;
+        switch (phase) {
+            case PHASE.ADD_PLAYER_NAME:
+            case PHASE.CHOOSE_PLAYER_AVATAR:
+            case PHASE.CONFIRMATION:
+                nextMusicType = "SETUP";
+                break;
+            case PHASE.PRE_GAME_COUNTDOWN:
+            case PHASE.TAGGING_WINDOW:
+            case PHASE.PLAYER_SELECTION:
+                nextMusicType = "TENSION";
+                break;
+            case PHASE.ROUND:
+            case PHASE.FIRST_TURN_PROMPT:
+                nextMusicType = "GAME";
+                break;
+            case PHASE.CELEBRATION:
+            case PHASE.RESET:
+                nextMusicType = "STOP";
+                break;
+        }
+
+        if (nextMusicType === this.currentMusicType) return;
+        this.currentMusicType = nextMusicType;
+
+        switch (nextMusicType) {
+            case "SETUP":
+                this.audio.playSetupMusic();
+                break;
+            case "TENSION":
+                this.audio.playTensionMusic();
+                break;
+            case "GAME":
+                this.audio.playGameMusic();
+                break;
+            case "STOP":
+                this.audio.stopMusic();
+                break;
+        }
+    }
+
     private getCellBackgroundColor(gx: number, gy: number, state: GameState): string {
         const isDark = (gx + gy) % 2 === 1;
         
+        // Highlight current turn player's square (overrides others)
+        const currentPlayer = state.players[state.turnIndex];
+        if (currentPlayer && currentPlayer.x === gx && currentPlayer.y === gy && (state.phase === PHASE.ROUND || state.phase === PHASE.FIRST_TURN_PROMPT)) {
+            return "var(--vga-bright-green)";
+        }
+
         // Highlight "It" player's square
         const itPlayer = state.players.find(p => p.isIt);
         if (itPlayer && itPlayer.x === gx && itPlayer.y === gy) {
@@ -130,7 +183,11 @@ export class GameRenderer {
             const underline = "---------------------------------";
             buffer = writeStringToBuffer(buffer, underline, getCenterX(underline), 13);
             
-            const emojiRow = AVAILABLE_EMOJIS.map((e, i) => i === avatarSelectionIndex ? `[${e}]` : ` ${e} `).join(" ");
+            const usedEmojis = new Set(players.map(p => p.emoji));
+            const emojiRow = AVAILABLE_EMOJIS.map((e, i) => {
+                if (usedEmojis.has(e)) return " X ";
+                return i === avatarSelectionIndex ? `[${e}]` : ` ${e} `;
+            }).join(" ");
             buffer = writeStringToBuffer(buffer, emojiRow, getCenterX(emojiRow), 16, "var(--vga-white)", "var(--vga-black)", "1.5em");
             
             const controlsText = "Use ARROWS to pick, ENTER to confirm";
@@ -202,42 +259,42 @@ export class GameRenderer {
             });
 
             const currentPlayer = players[turnIndex];
-            const statusY = boardY + boardCharHeight + 2;
+            const statusY = boardY + boardCharHeight + 4;
 
             if (phase === PHASE.TAGGING_WINDOW) {
                 const text1 = "!!! TAG !!!";
                 const text2 = "PRESS ENTER!";
                 const text3 = `TIME: ${(countdownTimer/1000).toFixed(1)}s`;
-                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-red)");
-                buffer = writeStringToBuffer(buffer, text2, getCenterX(text2), statusY + 1, "var(--vga-bright-yellow)");
-                buffer = writeStringToBuffer(buffer, text3, getCenterX(text3), statusY + 2);
+                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-red)", "var(--vga-black)", "1.8em");
+                buffer = writeStringToBuffer(buffer, text2, getCenterX(text2), statusY + 2, "var(--vga-bright-yellow)", "var(--vga-black)", "1.8em");
+                buffer = writeStringToBuffer(buffer, text3, getCenterX(text3), statusY + 4);
             } else if (phase === PHASE.PLAYER_SELECTION && currentPlayer) {
                 const text1 = "CHOOSE TARGET:";
-                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-cyan)");
+                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-cyan)", "var(--vga-black)", "1.8em");
                 const targets = players.filter((p, idx) => idx !== turnIndex && p.x === currentPlayer.x && p.y === currentPlayer.y);
                 targets.forEach((p, i) => {
                     const playerText = `${i + 1}: ${p.emoji} ${p.name}`;
-                    buffer = writeStringToBuffer(buffer, playerText, getCenterX(playerText), statusY + 2 + i);
+                    buffer = writeStringToBuffer(buffer, playerText, getCenterX(playerText), statusY + 2 + i, "var(--vga-white)", "var(--vga-black)", "1.8em");
                 });
             } else if (phase === PHASE.FIRST_TURN_PROMPT && currentPlayer) {
                 const text1 = "FIRST TURN PERK!";
                 const text2 = "MOVE 2 SPACES?";
                 const text3 = "PRESS Y / N";
-                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-yellow)");
-                buffer = writeStringToBuffer(buffer, text2, getCenterX(text2), statusY + 1, "var(--vga-white)");
-                buffer = writeStringToBuffer(buffer, text3, getCenterX(text3), statusY + 3, "var(--vga-bright-green)");
+                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-yellow)", "var(--vga-black)", "1.8em");
+                buffer = writeStringToBuffer(buffer, text2, getCenterX(text2), statusY + 2, "var(--vga-white)", "var(--vga-black)", "1.8em");
+                buffer = writeStringToBuffer(buffer, text3, getCenterX(text3), statusY + 4, "var(--vga-bright-green)", "var(--vga-black)", "1.8em");
             } else if (currentPlayer && phase === PHASE.ROUND) {
                 const text1 = "CURRENT TURN:";
                 const text2 = `${currentPlayer.emoji} ${currentPlayer.name}`;
-                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-green)");
-                buffer = writeStringToBuffer(buffer, text2, getCenterX(text2), statusY + 1);
+                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-green)", "var(--vga-black)", "1.8em");
+                buffer = writeStringToBuffer(buffer, text2, getCenterX(text2), statusY + 2, "var(--vga-white)", "var(--vga-black)", "1.8em");
                 if (currentPlayer.isIt) {
                     const text3 = "YOU ARE IT!";
-                    buffer = writeStringToBuffer(buffer, text3, getCenterX(text3), statusY + 3, "var(--vga-bright-red)");
+                    buffer = writeStringToBuffer(buffer, text3, getCenterX(text3), statusY + 4, "var(--vga-bright-red)", "var(--vga-black)", "1.8em");
                 }
             } else if (phase === PHASE.CELEBRATION) {
                 const text1 = "SUCCESSFUL TAG!";
-                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-magenta)");
+                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-magenta)", "var(--vga-black)", "1.8em");
             }
         }
         

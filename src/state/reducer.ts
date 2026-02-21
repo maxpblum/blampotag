@@ -62,7 +62,11 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
             
             if (state.phase === PHASE.ADD_PLAYER_NAME) {
                 if (event.key === 'Enter' && state.pendingPlayerName.trim().length > 0) {
-                    return { ...state, phase: PHASE.CHOOSE_PLAYER_AVATAR, avatarSelectionIndex: 0 };
+                    const usedEmojis = new Set(state.players.map(p => p.emoji));
+                    const availableIndices = AVAILABLE_EMOJIS
+                        .map((_, i) => i)
+                        .filter(i => !usedEmojis.has(AVAILABLE_EMOJIS[i]));
+                    return { ...state, phase: PHASE.CHOOSE_PLAYER_AVATAR, avatarSelectionIndex: availableIndices[0] || 0 };
                 }
                 if (event.key === 'Backspace') {
                     return { ...state, pendingPlayerName: state.pendingPlayerName.slice(0, -1) };

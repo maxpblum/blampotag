@@ -22,7 +22,7 @@ describe("GameRenderer", () => {
 
     beforeEach(() => {
         container = { innerHTML: "" } as any;
-        audio = jasmine.createSpyObj("AudioEffectPlayer", ["playMove", "playFanfare", "playTag", "playSelect", "init"]);
+        audio = jasmine.createSpyObj("AudioEffectPlayer", ["playMove", "playFanfare", "playTag", "playSelect", "init", "playSetupMusic", "playGameMusic", "playTensionMusic", "stopMusic"]);
         renderer = new GameRenderer(container, audio);
     });
 

@@ -39,4 +39,40 @@ export class AudioEngine {
             this.beep(freq, 0.2, i * 0.15);
         });
     }
+
+    private musicTimeout: number | null = null;
+    public playSequence(notes: { freq: number, duration: number }[], tempoBpm: number, loop: boolean = true): void {
+        this.stopSequence();
+        if (!this.context) return;
+
+        const beatDuration = 60 / tempoBpm;
+        let noteIndex = 0;
+
+        const scheduleNext = () => {
+            if (noteIndex >= notes.length) {
+                if (loop) {
+                    noteIndex = 0;
+                } else {
+                    return;
+                }
+            }
+
+            const note = notes[noteIndex]!;
+            if (note.freq > 0) {
+                this.beep(note.freq, note.duration * beatDuration * 0.9);
+            }
+            
+            this.musicTimeout = window.setTimeout(scheduleNext, note.duration * beatDuration * 1000);
+            noteIndex++;
+        };
+
+        scheduleNext();
+    }
+
+    public stopSequence(): void {
+        if (this.musicTimeout !== null) {
+            window.clearTimeout(this.musicTimeout);
+            this.musicTimeout = null;
+        }
+    }
 }
