@@ -37,6 +37,18 @@ describe('Grid Rendering', () => {
         expect(buffer[0]![4]!.char).toBe(" ");
     });
 
+    it('should handle background colors correctly', () => {
+        const width = 5;
+        const height = 1;
+        let buffer = createBuffer(width, height);
+        
+        buffer = writeStringToBuffer(buffer, "ABC", 0, 0, "red", "blue");
+        
+        expect(buffer[0]![0]!.backgroundColor).toBe("blue");
+        expect(buffer[0]![0]!.color).toBe("red");
+        expect(buffer[0]![3]!.backgroundColor).toBe("transparent"); // Default
+    });
+
     it('should handle borders correctly', () => {
         const width = 10;
         const height = 5;

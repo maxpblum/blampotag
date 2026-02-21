@@ -69,6 +69,11 @@ export class GameRenderer {
         }
     }
 
+    private getCellBackgroundColor(gx: number, gy: number): string {
+        const isDark = (gx + gy) % 2 === 1;
+        return isDark ? "var(--vga-black)" : "var(--vga-dark-gray)";
+    }
+
     private renderPhase(phase: PHASE, state: GameState): CharacterBuffer {
         const { boardConfig, players, turnIndex, countdownTimer, pendingPlayerName, avatarSelectionIndex } = state;
         const bufferWidth = 100;
@@ -147,13 +152,11 @@ export class GameRenderer {
             // Draw checkerboard
             for (let gy = 0; gy < boardConfig.height; gy++) {
                 for (let gx = 0; gx < boardConfig.width; gx++) {
-                    const isDark = (gx + gy) % 2 === 1;
-                    const color = isDark ? "var(--vga-dark-gray)" : "var(--vga-light-gray)";
-                    const char = isDark ? " " : "·";
+                    const bgColor = this.getCellBackgroundColor(gx, gy);
                     
                     for (let cy = 0; cy < GRID_CELL_HEIGHT; cy++) {
                         for (let cx = 0; cx < GRID_CELL_WIDTH; cx++) {
-                            buffer = writeStringToBuffer(buffer, char, boardX + gx * GRID_CELL_WIDTH + cx, boardY + gy * GRID_CELL_HEIGHT + cy, color);
+                            buffer = writeStringToBuffer(buffer, " ", boardX + gx * GRID_CELL_WIDTH + cx, boardY + gy * GRID_CELL_HEIGHT + cy, "var(--vga-white)", bgColor);
                         }
                     }
                 }
@@ -164,10 +167,12 @@ export class GameRenderer {
                 if (player.isIt) color = "var(--vga-bright-red)";
                 else if (idx === turnIndex && phase === PHASE.ROUND) color = "var(--vga-bright-green)";
                 
+                const bgColor = this.getCellBackgroundColor(player.x, player.y);
+                
                 // Center emoji in cell
                 const px = boardX + player.x * GRID_CELL_WIDTH + Math.floor((GRID_CELL_WIDTH - 2) / 2);
                 const py = boardY + player.y * GRID_CELL_HEIGHT + Math.floor((GRID_CELL_HEIGHT - 1) / 2);
-                buffer = writeStringToBuffer(buffer, player.emoji, px, py, color);
+                buffer = writeStringToBuffer(buffer, player.emoji, px, py, color, bgColor);
             });
 
             const currentPlayer = players[turnIndex];
