@@ -118,7 +118,7 @@ export function renderToContainer(buffer: CharacterBuffer, container: HTMLElemen
             while (currentX < row.length) {
                 const nextCell = row[currentX];
                 if (!nextCell || nextCell.char === "") {
-                    // Wide character tail - shouldn't happen here due to skip, but handle for safety
+                    // Wide character tail
                     if (nextCell && nextCell.char === "") {
                         currentX++;
                     } else {
@@ -127,32 +127,55 @@ export function renderToContainer(buffer: CharacterBuffer, container: HTMLElemen
                     continue;
                 }
                 
-                const nextBg = nextCell.backgroundColor;
-                if (nextCell.color !== color || nextBg !== bgColor || nextCell.fontSize !== fontSize) {
+                if (nextCell.color !== color || nextCell.backgroundColor !== bgColor || nextCell.fontSize !== fontSize) {
                     break;
                 }
                 
                 const replacements: Record<string, string> = {
                     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
                 };
-                const char = nextCell.char === " " ? "&nbsp;" : nextCell.char.replace(/[&<>"']/g, m => replacements[m] || m);
+                const char = nextCell.char.replace(/[&<>"']/g, m => replacements[m] || m);
                 blockText += char;
                 blockCharCount += nextCell.isWide ? 2 : 1;
                 currentX++;
             }
             
-            const innerStyle = fontSize ? `font-size: ${fontSize};` : "";
-            const outerStyle = `color: ${color}; background-color: ${bgColor}; display: inline-block; width: ${blockCharCount}ch; vertical-align: middle; line-height: 1; text-align: center; overflow: visible;`;
+            const commonStyle = `color: ${color}; background-color: ${bgColor}; line-height: 1;`;
+            
             if (fontSize) {
-                // We wrap the large character in a fixed-width container that matches the character's slot in the grid.
-                // This prevents the font-size from pushing other characters.
-                currentRowHtml += `<span style="${outerStyle}"><span style="${innerStyle} display: inline-block; width: 100%; height: 100%; line-height: 0.5;">${blockText}</span></span>`;
+                // Large character: use a wrapper to preserve grid spacing.
+                // The wrapper keeps the parent font-size so 'ch' units are correct.
+                const wrapperStyle = [
+                    commonStyle,
+                    "display: inline-flex",
+                    `width: ${blockCharCount}ch`,
+                    "height: 1em",
+                    "align-items: center",
+                    "justify-content: center",
+                    "vertical-align: top",
+                    "position: relative",
+                    "z-index: 10",
+                    "overflow: visible"
+                ].join("; ") + ";";
+                const innerStyle = `font-size: ${fontSize}; line-height: 1; display: inline-block;`;
+                currentRowHtml += `<span style="${wrapperStyle}"><span style="${innerStyle}">${blockText}</span></span>`;
             } else {
-                currentRowHtml += `<span style="${outerStyle}">${blockText}</span>`;
+                // Normal text: use inline-block with fixed width to ensure grid alignment.
+                // Flexbox on the parent row will eliminate sub-pixel gaps between these.
+                const style = [
+                    commonStyle,
+                    "display: inline-block",
+                    `width: ${blockCharCount}ch`,
+                    "vertical-align: top",
+                    "white-space: pre"
+                ].join("; ") + ";";
+                currentRowHtml += `<span style="${style}">${blockText}</span>`;
             }
             x = currentX;
         }
-        html += currentRowHtml + "\n";
+        // Use flexbox for the row to ensure spans touch perfectly with no gaps.
+        // overflow: visible allows large characters to bleed into adjacent rows/cells.
+        html += `<div style="display: flex; line-height: 1; height: 1em; white-space: pre; overflow: visible;">${currentRowHtml}</div>`;
     }
     if (container.innerHTML !== html) {
         container.innerHTML = html;
