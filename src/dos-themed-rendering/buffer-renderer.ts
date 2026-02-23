@@ -4,13 +4,13 @@ export type Cell = {
     readonly char: string;
     readonly color: string;
     readonly backgroundColor: string;
-    readonly fontSize?: string;
+    readonly fontSize?: string | undefined;
     readonly isWide?: boolean; // If true, this character takes up 2 monospaced slots
     readonly overlay?: {
         readonly char: string;
         readonly color: string;
         readonly backgroundColor: string;
-        readonly fontSize?: string;
+        readonly fontSize?: string | undefined;
     };
 };
 
