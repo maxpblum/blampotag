@@ -55,6 +55,11 @@ export function writeStringToBuffer(
                 row[currentX + 1] = { char: "", color, backgroundColor, fontSize, isWide: false }; // Empty string won't render
                 currentX += 2;
             } else {
+                // If we're overwriting a wide char's head with a non-wide char,
+                // the tail must become a space to preserve layout.
+                if (currentX + 1 < row.length && row[currentX + 1].char === "") {
+                    row[currentX + 1] = { ...row[currentX + 1], char: " " };
+                }
                 currentX += 1;
             }
         }

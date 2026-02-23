@@ -11,7 +11,6 @@ export const MOVE_KEYS: Record<string, { dx: number, dy: number, dist: number }>
     'w': { dx: 0, dy: -1, dist: 1 },
     'e': { dx: 1, dy: -1, dist: 1 },
     'a': { dx: -1, dy: 0, dist: 1 },
-    's': { dx: 0, dy: 0, dist: 1 },
     'd': { dx: 1, dy: 0, dist: 1 },
     'z': { dx: -1, dy: 1, dist: 1 },
     'x': { dx: 0, dy: 1, dist: 1 },

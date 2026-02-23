@@ -8,7 +8,7 @@ test.describe('Renderer Screenshot Tests', () => {
       test.skip();
     }
     // Navigate to our renderer test page
-    await page.goto('http://localhost:5173/app/render-test.html');
+    await page.goto('app/render-test.html');
     await page.waitForFunction(() => (window as any).renderState !== undefined);
   });
 
