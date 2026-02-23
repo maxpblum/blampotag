@@ -25,6 +25,8 @@ git rm -rf .
 
 # 5. Move build artifacts to root
 echo "Staging build artifacts..."
+# Ensure index.html is in the root by copying it from app/
+cp dist/app/index.html dist/index.html
 # Since dist was ignored, it's still there after git rm
 mv dist/* .
 rm -rf dist
