@@ -66,6 +66,16 @@ test.describe('Renderer Screenshot Tests', () => {
     await expect(page.locator('#game-output')).toHaveScreenshot('round-it-turn.png');
   });
 
+  test('ROUND phase - first turn', async ({ page }) => {
+    await page.evaluate((state) => (window as any).renderState(state), {
+      ...baseState,
+      phase: PHASE.ROUND,
+      players: [{ ...PLAYER_1, moveCount: 0 }, PLAYER_2],
+      turnIndex: 0
+    });
+    await expect(page.locator('#game-output')).toHaveScreenshot('round-first-turn.png');
+  });
+
   test('ROUND phase - with recent move highlight', async ({ page }) => {
     await page.evaluate((state) => (window as any).renderState(state), {
       ...baseState,
@@ -85,17 +95,6 @@ test.describe('Renderer Screenshot Tests', () => {
       turnIndex: 1
     });
     await expect(page.locator('#game-output')).toHaveScreenshot('round-non-it-turn.png');
-  });
-
-  test('FIRST_TURN_PROMPT phase', async ({ page }) => {
-    await page.evaluate((state) => (window as any).renderState(state), {
-      ...baseState,
-      phase: PHASE.FIRST_TURN_PROMPT,
-      players: [PLAYER_1, PLAYER_2],
-      turnIndex: 0,
-      pendingMove: { dx: 1, dy: 0 }
-    });
-    await expect(page.locator('#game-output')).toHaveScreenshot('first-turn-prompt.png');
   });
 
   test('TAGGING_WINDOW phase', async ({ page }) => {

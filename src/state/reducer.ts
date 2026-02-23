@@ -3,9 +3,28 @@ import type { GameState, Player } from './game-state';
 
 export type GameEvent = 
     | { type: 'TICK'; dt: number }
-    | { type: 'MOVE'; dx: number; dy: number }
     | { type: 'KEY_PRESS'; key: string }
     | { type: 'NONE' };
+
+export const MOVE_KEYS: Record<string, { dx: number, dy: number, dist: number }> = {
+    'q': { dx: -1, dy: -1, dist: 1 },
+    'w': { dx: 0, dy: -1, dist: 1 },
+    'e': { dx: 1, dy: -1, dist: 1 },
+    'a': { dx: -1, dy: 0, dist: 1 },
+    's': { dx: 0, dy: 0, dist: 1 },
+    'd': { dx: 1, dy: 0, dist: 1 },
+    'z': { dx: -1, dy: 1, dist: 1 },
+    'x': { dx: 0, dy: 1, dist: 1 },
+    'c': { dx: 1, dy: 1, dist: 1 },
+    'r': { dx: -1, dy: -1, dist: 2 },
+    't': { dx: 0, dy: -1, dist: 2 },
+    'y': { dx: 1, dy: -1, dist: 2 },
+    'f': { dx: -1, dy: 0, dist: 2 },
+    'h': { dx: 1, dy: 0, dist: 2 },
+    'v': { dx: -1, dy: 1, dist: 2 },
+    'b': { dx: 0, dy: 1, dist: 2 },
+    'n': { dx: 1, dy: 1, dist: 2 },
+};
 
 export function rootReducer(state: GameState, event: GameEvent): GameState {
     switch (event.type) {
@@ -84,14 +103,14 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
 
                 if (availableIndices.length === 0) return state; // Should not happen with current game logic
 
-                if (event.key === 'ArrowLeft') {
+                if (event.key === 'a' || event.key === 'A') {
                     let currentIdxInAvailable = availableIndices.indexOf(state.avatarSelectionIndex);
                     // If not found, start from nearest (or 0)
                     if (currentIdxInAvailable === -1) currentIdxInAvailable = 0;
                     const nextIdxInAvailable = (currentIdxInAvailable - 1 + availableIndices.length) % availableIndices.length;
                     return { ...state, avatarSelectionIndex: availableIndices[nextIdxInAvailable] };
                 }
-                if (event.key === 'ArrowRight') {
+                if (event.key === 'd' || event.key === 'D') {
                     let currentIdxInAvailable = availableIndices.indexOf(state.avatarSelectionIndex);
                     // If not found, start from nearest (or 0)
                     if (currentIdxInAvailable === -1) currentIdxInAvailable = 0;
@@ -126,15 +145,16 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                 }
             }
 
-            if (state.phase === PHASE.FIRST_TURN_PROMPT) {
+            if (state.phase === PHASE.ROUND) {
                 const currentPlayer = state.players[state.turnIndex];
-                if (!currentPlayer || !state.pendingMove) return state;
-                
-                if (event.key === 'y' || event.key === 'Y') {
-                    return executeMove(state, state.pendingMove.dx * 2, state.pendingMove.dy * 2);
-                }
-                if (event.key === 'n' || event.key === 'N') {
-                    return executeMove(state, state.pendingMove.dx, state.pendingMove.dy);
+                if (!currentPlayer) return state;
+
+                const move = MOVE_KEYS[event.key.toLowerCase()];
+                if (move) {
+                    if (move.dist === 2 && currentPlayer.moveCount !== 0) {
+                        return state;
+                    }
+                    return executeMove(state, move.dx * move.dist, move.dy * move.dist);
                 }
             }
 
@@ -193,34 +213,6 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
             }
             return state;
 
-        case 'MOVE':
-            if (state.phase !== PHASE.ROUND || state.transitionProgress < 1.0) return state;
-            const currentPlayerMove = state.players[state.turnIndex];
-            if (!currentPlayerMove) return state;
-
-            const nx = currentPlayerMove.x + event.dx;
-            const ny = currentPlayerMove.y + event.dy;
-            
-            if (nx < 0 || nx >= state.boardConfig.width || ny < 0 || ny >= state.boardConfig.height) {
-                return state;
-            }
-
-            // First turn perk check
-            if (currentPlayerMove.moveCount === 0) {
-                const nx2 = currentPlayerMove.x + event.dx * 2;
-                const ny2 = currentPlayerMove.y + event.dy * 2;
-                const canMove2 = nx2 >= 0 && nx2 < state.boardConfig.width && ny2 >= 0 && ny2 < state.boardConfig.height;
-                
-                if (canMove2) {
-                    return {
-                        ...setPhase(state, PHASE.FIRST_TURN_PROMPT),
-                        pendingMove: { dx: event.dx, dy: event.dy }
-                    };
-                }
-            }
-
-            return executeMove(state, event.dx, event.dy);
-
         default:
             return state;
     }
@@ -232,6 +224,10 @@ function executeMove(state: GameState, dx: number, dy: number): GameState {
 
     const nx = currentPlayer.x + dx;
     const ny = currentPlayer.y + dy;
+
+    if (nx < 0 || nx >= state.boardConfig.width || ny < 0 || ny >= state.boardConfig.height) {
+        return state;
+    }
 
     const lastMove = { fromX: currentPlayer.x, fromY: currentPlayer.y, toX: nx, toY: ny };
 
@@ -277,13 +273,6 @@ function transitionTo(state: GameState, nextPhase: PHASE): GameState {
         oldPhase: state.phase,
         phase: nextPhase,
         transitionProgress: 0.0
-    };
-}
-
-function setPhase(state: GameState, nextPhase: PHASE): GameState {
-    return {
-        ...state,
-        phase: nextPhase
     };
 }
 

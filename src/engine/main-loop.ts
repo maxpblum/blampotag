@@ -31,17 +31,6 @@ export class MainLoop {
     public readonly onKeyPress = (key: string): void => {
         this.renderer.initAudio();
         this.update({ type: "KEY_PRESS", key });
-        
-        switch (key) {
-            case "ArrowUp": this.update({ type: "MOVE", dx: 0, dy: -1 }); break;
-            case "ArrowDown": this.update({ type: "MOVE", dx: 0, dy: 1 }); break;
-            case "ArrowLeft": this.update({ type: "MOVE", dx: -1, dy: 0 }); break;
-            case "ArrowRight": this.update({ type: "MOVE", dx: 1, dy: 0 }); break;
-            case "q": this.update({ type: "MOVE", dx: -1, dy: -1 }); break;
-            case "e": this.update({ type: "MOVE", dx: 1, dy: -1 }); break;
-            case "z": this.update({ type: "MOVE", dx: -1, dy: 1 }); break;
-            case "c": this.update({ type: "MOVE", dx: 1, dy: 1 }); break;
-        }
     };
 
     public readonly loop = (timestamp: number): void => {

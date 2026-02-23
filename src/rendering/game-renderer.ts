@@ -1,5 +1,6 @@
 import { PHASE, AVAILABLE_EMOJIS } from "../state/game-state";
 import type { GameState } from "../state/game-state";
+import { MOVE_KEYS } from "../state/reducer";
 import { renderToContainer, createBuffer, drawBox, writeStringToBuffer } from "../dos-themed-rendering/buffer-renderer";
 import type { CharacterBuffer } from "../dos-themed-rendering/buffer-renderer";
 import { TITLE_ART, COUNTDOWN_ART } from "../dos-themed-rendering/ascii-assets";
@@ -82,7 +83,6 @@ export class GameRenderer {
                 nextMusicType = "TENSION";
                 break;
             case PHASE.ROUND:
-            case PHASE.FIRST_TURN_PROMPT:
                 nextMusicType = "GAME";
                 break;
             case PHASE.CELEBRATION:
@@ -115,7 +115,7 @@ export class GameRenderer {
         
         // Highlight current turn player's square (overrides others)
         const currentPlayer = state.players[state.turnIndex];
-        if (currentPlayer && currentPlayer.x === gx && currentPlayer.y === gy && (state.phase === PHASE.ROUND || state.phase === PHASE.FIRST_TURN_PROMPT)) {
+        if (currentPlayer && currentPlayer.x === gx && currentPlayer.y === gy && state.phase === PHASE.ROUND) {
             return "var(--vga-bright-green)";
         }
 
@@ -132,20 +132,6 @@ export class GameRenderer {
             }
             if (state.lastMove.toX === gx && state.lastMove.toY === gy) {
                 return "var(--vga-bright-blue)";
-            }
-        }
-
-        // Highlight perk targets
-        if (state.phase === PHASE.FIRST_TURN_PROMPT && state.pendingMove) {
-            const currentPlayer = state.players[state.turnIndex];
-            if (currentPlayer) {
-                const nx = currentPlayer.x + state.pendingMove.dx;
-                const ny = currentPlayer.y + state.pendingMove.dy;
-                const nx2 = currentPlayer.x + state.pendingMove.dx * 2;
-                const ny2 = currentPlayer.y + state.pendingMove.dy * 2;
-
-                if (gx === nx && gy === ny) return "var(--vga-magenta)";
-                if (gx === nx2 && gy === ny2) return "var(--vga-magenta)";
             }
         }
 
@@ -190,7 +176,7 @@ export class GameRenderer {
             }).join(" ");
             buffer = writeStringToBuffer(buffer, emojiRow, getCenterX(emojiRow), 16, "var(--vga-white)", "var(--vga-black)", "1.5em");
             
-            const controlsText = "Use ARROWS to pick, ENTER to confirm";
+            const controlsText = "Use 'A'/'D' to pick, ENTER to confirm";
             buffer = writeStringToBuffer(buffer, controlsText, getCenterX(controlsText), 19);
         } else if (phase === PHASE.CONFIRMATION) {
             const configText = "GAME CONFIGURATION";
@@ -222,7 +208,7 @@ export class GameRenderer {
             const count = Math.ceil(countdownTimer / 1000);
             const art = COUNTDOWN_ART[count] || "";
             buffer = writeStringToBuffer(buffer, art, getCenterX(art), 15, "var(--vga-bright-yellow)");
-        } else if (phase === PHASE.ROUND || phase === PHASE.TAGGING_WINDOW || phase === PHASE.PLAYER_SELECTION || phase === PHASE.CELEBRATION || phase === PHASE.RESET || phase === PHASE.FIRST_TURN_PROMPT) {
+        } else if (phase === PHASE.ROUND || phase === PHASE.TAGGING_WINDOW || phase === PHASE.PLAYER_SELECTION || phase === PHASE.CELEBRATION || phase === PHASE.RESET) {
             const boardCharWidth = boardConfig.width * GRID_CELL_WIDTH;
             const boardCharHeight = boardConfig.height * GRID_CELL_HEIGHT;
             const boardX = Math.floor((bufferWidth - boardCharWidth) / 2); 
@@ -259,6 +245,25 @@ export class GameRenderer {
             });
 
             const currentPlayer = players[turnIndex];
+            
+            // Key Overlays
+            if (phase === PHASE.ROUND && currentPlayer) {
+                Object.entries(MOVE_KEYS).forEach(([key, move]) => {
+                    if (move.dist === 2 && currentPlayer.moveCount !== 0) return;
+
+                    const tx = currentPlayer.x + move.dx * move.dist;
+                    const ty = currentPlayer.y + move.dy * move.dist;
+
+                    if (tx >= 0 && tx < boardConfig.width && ty >= 0 && ty < boardConfig.height) {
+                        const px = boardX + tx * GRID_CELL_WIDTH + Math.floor((GRID_CELL_WIDTH - 1) / 2);
+                        const py = boardY + ty * GRID_CELL_HEIGHT + Math.floor((GRID_CELL_HEIGHT - 1) / 2);
+                        const isTwoSpace = move.dist === 2;
+                        const bgColor = isTwoSpace ? "var(--vga-magenta)" : "var(--vga-blue)";
+                        buffer = writeStringToBuffer(buffer, key.toUpperCase(), px, py, "var(--vga-bright-white)", bgColor, "1.5em");
+                    }
+                });
+            }
+
             const statusY = boardY + boardCharHeight + 4;
 
             if (phase === PHASE.TAGGING_WINDOW) {
@@ -271,20 +276,12 @@ export class GameRenderer {
             } else if (phase === PHASE.PLAYER_SELECTION && currentPlayer) {
                 const text1 = "CHOOSE TARGET:";
                 buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-cyan)", "var(--vga-black)", "1.8em");
-                const targets = players.filter((p, idx) => idx !== turnIndex && p.x === currentPlayer.x && p.y === currentPlayer.y);
-                targets.forEach((p, i) => {
-                    const playerText = `${i + 1}: ${p.emoji} ${p.name}`;
-                    buffer = writeStringToBuffer(buffer, playerText, getCenterX(playerText), statusY + 2 + i, "var(--vga-white)", "var(--vga-black)", "1.8em");
-                });
-            } else if (phase === PHASE.FIRST_TURN_PROMPT && currentPlayer) {
-                const text1 = "FIRST TURN PERK!";
-                const text2 = "MOVE 2 SPACES?";
-                const text3 = "PRESS Y / N";
-                buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-yellow)", "var(--vga-black)", "1.8em");
-                buffer = writeStringToBuffer(buffer, text2, getCenterX(text2), statusY + 2, "var(--vga-white)", "var(--vga-black)", "1.8em");
-                buffer = writeStringToBuffer(buffer, text3, getCenterX(text3), statusY + 4, "var(--vga-bright-green)", "var(--vga-black)", "1.8em");
-            } else if (currentPlayer && phase === PHASE.ROUND) {
-                const text1 = "CURRENT TURN:";
+                                    const targets = players.filter((p, idx) => idx !== turnIndex && p.x === currentPlayer.x && p.y === currentPlayer.y);
+                                    targets.forEach((p, i) => {
+                                        const playerText = `${i + 1}: ${p.emoji} ${p.name}`;
+                                        buffer = writeStringToBuffer(buffer, playerText, getCenterX(playerText), statusY + 2 + i, "var(--vga-white)", "var(--vga-black)", "1.8em");
+                                    });
+                                } else if (currentPlayer && phase === PHASE.ROUND) {                const text1 = "CURRENT TURN:";
                 const text2 = `${currentPlayer.emoji} ${currentPlayer.name}`;
                 buffer = writeStringToBuffer(buffer, text1, getCenterX(text1), statusY, "var(--vga-bright-green)", "var(--vga-black)", "1.8em");
                 buffer = writeStringToBuffer(buffer, text2, getCenterX(text2), statusY + 2, "var(--vga-white)", "var(--vga-black)", "1.8em");

@@ -51,11 +51,11 @@ describe('rootReducer', () => {
     });
 
     describe('PHASE.CHOOSE_PLAYER_AVATAR', () => {
-        it('should update avatarSelectionIndex on arrow keys', () => {
+        it('should update avatarSelectionIndex on a/d keys', () => {
             const state = createTestState({ phase: PHASE.CHOOSE_PLAYER_AVATAR, avatarSelectionIndex: 0 });
-            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'ArrowRight' });
+            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'd' });
             expect(next.avatarSelectionIndex).toBe(1);
-            const prev = rootReducer(state, { type: 'KEY_PRESS', key: 'ArrowLeft' });
+            const prev = rootReducer(state, { type: 'KEY_PRESS', key: 'a' });
             expect(prev.avatarSelectionIndex).toBe(9); // Assuming 10 emojis
         });
 
@@ -72,19 +72,19 @@ describe('rootReducer', () => {
             expect(next.pendingPlayerName).toBe("");
         });
 
-        it('should skip used emojis when navigating with arrows', () => {
+        it('should skip used emojis when navigating with a/d', () => {
             const state = createTestState({ 
                 phase: PHASE.CHOOSE_PLAYER_AVATAR,
                 players: [{ ...PLAYER_1, emoji: AVAILABLE_EMOJIS[1] }], // 🧛 is used
                 avatarSelectionIndex: 0 // 🧙
             });
             
-            // From index 0, ArrowRight should skip index 1 and go to index 2
-            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'ArrowRight' });
+            // From index 0, d should skip index 1 and go to index 2
+            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'd' });
             expect(next.avatarSelectionIndex).toBe(2);
             
-            // From index 2, ArrowLeft should skip index 1 and go back to index 0
-            const back = rootReducer(next, { type: 'KEY_PRESS', key: 'ArrowLeft' });
+            // From index 2, a should skip index 1 and go back to index 0
+            const back = rootReducer(next, { type: 'KEY_PRESS', key: 'a' });
             expect(back.avatarSelectionIndex).toBe(0);
         });
 
@@ -123,13 +123,13 @@ describe('rootReducer', () => {
     });
 
     describe('PHASE.ROUND', () => {
-        it('should move current player and change turn and track lastMove', () => {
+        it('should move current player and change turn and track lastMove on qweasdzxc', () => {
             const state = createTestState({ 
                 phase: PHASE.ROUND, 
                 players: [PLAYER_1, PLAYER_2], 
                 turnIndex: 0 
             });
-            const next = rootReducer(state, { type: 'MOVE', dx: 1, dy: 0 });
+            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'd' }); // Right
             expect(next.players[0].x).toBe(3);
             expect(next.turnIndex).toBe(1);
             expect(next.lastMove).toEqual({ fromX: 2, fromY: 2, toX: 3, toY: 2 });
@@ -142,23 +142,36 @@ describe('rootReducer', () => {
                 players: [playerAtEdge, PLAYER_2], 
                 turnIndex: 0 
             });
-            const next = rootReducer(state, { type: 'MOVE', dx: -1, dy: 0 });
+            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'a' }); // Left
             expect(next.players[0].x).toBe(0);
             expect(next.turnIndex).toBe(0); // Turn should not change if move rejected
         });
 
-        it('should transition to FIRST_TURN_PROMPT if moveCount is 0 and NOT reset transitionProgress', () => {
-            const newPlayer = { ...PLAYER_1, moveCount: 0 };
+        it('should move 2 spaces on first turn with rtfhyvbn', () => {
+            const newPlayer = { ...PLAYER_1, moveCount: 0, x: 2, y: 2 };
             const state = createTestState({ 
                 phase: PHASE.ROUND, 
                 players: [newPlayer, PLAYER_2], 
                 turnIndex: 0,
                 transitionProgress: 1.0 
             });
-            const next = rootReducer(state, { type: 'MOVE', dx: 1, dy: 0 });
-            expect(next.phase).toBe(PHASE.FIRST_TURN_PROMPT);
-            expect(next.pendingMove).toEqual({ dx: 1, dy: 0 });
-            expect(next.transitionProgress).toBe(1.0); // Should not be 0.0
+            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'h' }); // Right 2
+            expect(next.players[0].x).toBe(4);
+            expect(next.phase).toBe(PHASE.ROUND);
+            expect(next.turnIndex).toBe(1);
+        });
+
+        it('should NOT move 2 spaces if NOT first turn', () => {
+            const oldPlayer = { ...PLAYER_1, moveCount: 1, x: 2, y: 2 };
+            const state = createTestState({ 
+                phase: PHASE.ROUND, 
+                players: [oldPlayer, PLAYER_2], 
+                turnIndex: 0,
+                transitionProgress: 1.0 
+            });
+            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'h' }); // Right 2
+            expect(next.players[0].x).toBe(2); // No move
+            expect(next.turnIndex).toBe(0);
         });
 
         it('should transition to TAGGING_WINDOW if "It" lands on another player', () => {
@@ -169,32 +182,9 @@ describe('rootReducer', () => {
                 players: [itPlayer, targetPlayer], 
                 turnIndex: 0 
             });
-            const next = rootReducer(state, { type: 'MOVE', dx: 1, dy: 0 });
+            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'd' }); // Right
             expect(next.phase).toBe(PHASE.TAGGING_WINDOW);
             expect(next.players[0].x).toBe(3);
-        });
-    });
-
-    describe('PHASE.FIRST_TURN_PROMPT', () => {
-        const state = createTestState({ 
-            phase: PHASE.FIRST_TURN_PROMPT, 
-            players: [{ ...PLAYER_1, moveCount: 0 }, PLAYER_2], 
-            turnIndex: 0,
-            pendingMove: { dx: 1, dy: 0 }
-        });
-
-        it('should move 2 spaces on "y"', () => {
-            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'y' });
-            expect(next.players[0].x).toBe(4);
-            expect(next.phase).toBe(PHASE.ROUND);
-            expect(next.turnIndex).toBe(1);
-        });
-
-        it('should move 1 space on "n"', () => {
-            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'n' });
-            expect(next.players[0].x).toBe(3);
-            expect(next.phase).toBe(PHASE.ROUND);
-            expect(next.turnIndex).toBe(1);
         });
     });
 
@@ -274,7 +264,7 @@ describe('rootReducer', () => {
 
         it('should NOT handle inputs during transition', () => {
             const state = createTestState({ phase: PHASE.ROUND, transitionProgress: 0.5 });
-            const next = rootReducer(state, { type: 'MOVE', dx: 1, dy: 0 });
+            const next = rootReducer(state, { type: 'KEY_PRESS', key: 'd' });
             expect(next).toBe(state);
         });
     });

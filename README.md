@@ -11,7 +11,9 @@ Blampotag was inspired by a request for a computer game version of Tag that feel
 - **The Board:** A configurable grid where players take turns moving.
 - **Players:** 2 or more players, each with a name and an emoji avatar.
 - **Movement:** 
-  - Move one space per turn (orthogonally or diagonally).
+  - Move one space per turn using the **3x3 directional grid** (`QWE/ASD/ZXC`).
+  - **First Turn Perk:** On your very first move, you can move **two spaces** instead of one by using the **outer directional grid** (`RTY/FGH/VBN`).
+  - Letter overlays appear on the board to show exactly which key moves you to which square.
   - Moves outside the board are rejected.
 - **The "It" Mechanic:**
   - One player is designated as "It".
@@ -21,13 +23,14 @@ Blampotag was inspired by a request for a computer game version of Tag that feel
 - **Rounds:** After a successful tag, the tagged player becomes "It" and a new round begins with pieces randomized across the board.
 
 ### Controls
-- **Arrow Keys:** Move your piece (Up, Down, Left, Right).
-- **`Q`, `E`, `Z`, `C`:** Move your piece diagonally.
+- **`Q`, `W`, `E`, `A`, `S`, `D`, `Z`, `X`, `C`:** Move your piece (1 space). `S` to stay/wait.
+- **`R`, `T`, `Y`, `F`, `H`, `V`, `B`, `N`:** Move your piece (2 spaces, **first turn only**).
 - **`Enter`:** Execute a tag during the 2-second window, or confirm selections during setup.
+- **`A` / `D`:** Navigate avatar selection during setup.
 - **`1`-`9`:** Select a player to tag when multiple targets are available.
 - **`=` / `-`:** Increase or decrease board width (during configuration).
 - **`[` / `]`:** Increase or decrease board height (during configuration).
-- **`A`:** Add another player (during configuration).
+- **`A` (during setup):** Add another player (during configuration).
 
 ---
 

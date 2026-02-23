@@ -4,7 +4,6 @@ export enum PHASE {
     CONFIRMATION = "CONFIRMATION",
     PRE_GAME_COUNTDOWN = "PRE_GAME_COUNTDOWN",
     ROUND = "ROUND",
-    FIRST_TURN_PROMPT = "FIRST_TURN_PROMPT",
     TAGGING_WINDOW = "TAGGING_WINDOW",
     PLAYER_SELECTION = "PLAYER_SELECTION",
     CELEBRATION = "CELEBRATION",
@@ -38,7 +37,6 @@ export type GameState = {
     readonly oldPhase: PHASE | null;
     readonly avatarSelectionIndex: number;
     readonly pendingPlayerName: string;
-    readonly pendingMove?: { dx: number; dy: number };
     readonly lastMove?: { fromX: number; fromY: number; toX: number; toY: number };
 };
 

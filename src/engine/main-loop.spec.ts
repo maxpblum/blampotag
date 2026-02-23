@@ -60,11 +60,11 @@ describe("MainLoop", () => {
         const roundState: GameState = { 
             ...initialState, 
             phase: PHASE.ROUND,
-            players: [{ id: "1", name: "P1", emoji: "🧙", x: 1, y: 1, startOfTurnX: 1, startOfTurnY: 1, isIt: false }]
+            players: [{ id: "1", name: "P1", emoji: "🧙", x: 1, y: 1, startOfTurnX: 1, startOfTurnY: 1, isIt: false, moveCount: 1 }]
         };
         const loopWithRound = new MainLoop(roundState, renderer, keyboard, ticker);
         
-        loopWithRound.onKeyPress("ArrowUp");
+        loopWithRound.onKeyPress("w"); // Up
         expect(loopWithRound.getState().players[0]!.y).toBe(0);
     });
 });
