@@ -1,7 +1,7 @@
 import { PHASE, AVAILABLE_EMOJIS } from "../state/game-state";
 import type { GameState } from "../state/game-state";
 import { MOVE_KEYS } from "../state/reducer";
-import { renderToContainer, createBuffer, drawBox, writeStringToBuffer } from "../dos-themed-rendering/buffer-renderer";
+import { renderToContainer, createBuffer, drawBox, writeStringToBuffer, writeOverlayToBuffer } from "../dos-themed-rendering/buffer-renderer";
 import type { CharacterBuffer } from "../dos-themed-rendering/buffer-renderer";
 import { TITLE_ART, COUNTDOWN_ART } from "../dos-themed-rendering/ascii-assets";
 import { getBlockyWipeBuffer } from "../dos-themed-rendering/transitions";
@@ -259,7 +259,7 @@ export class GameRenderer {
                         const py = boardY + ty * GRID_CELL_HEIGHT + Math.floor((GRID_CELL_HEIGHT - 1) / 2);
                         const isTwoSpace = move.dist === 2;
                         const bgColor = isTwoSpace ? "var(--vga-magenta)" : "var(--vga-blue)";
-                        buffer = writeStringToBuffer(buffer, key.toUpperCase(), px, py, "var(--vga-bright-white)", bgColor, "1.5em");
+                        buffer = writeOverlayToBuffer(buffer, key.toUpperCase(), px, py, "var(--vga-bright-white)", bgColor, "1.5em");
                     }
                 });
             }

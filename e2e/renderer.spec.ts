@@ -3,10 +3,7 @@ import { PHASE } from '../src/state/game-state';
 
 test.describe('Renderer Screenshot Tests', () => {
   test.beforeEach(async ({ page }, testInfo) => {
-    // Only run these tests on the 'normal' project
-    if (testInfo.project.name !== 'chromium-desktop-partial') {
-      test.skip();
-    }
+    test.skip(testInfo.project.name !== 'chromium-desktop-partial', 'Only run on chromium-desktop-partial');
     // Navigate to our renderer test page
     await page.goto('app/render-test.html');
     await page.waitForFunction(() => (window as any).renderState !== undefined);
@@ -28,6 +25,15 @@ test.describe('Renderer Screenshot Tests', () => {
     pendingPlayerName: ""
   };
 
+  test('SPLASH SCREEN (ADD_PLAYER_NAME empty)', async ({ page }) => {
+    await page.evaluate((state) => (window as any).renderState(state), {
+      ...baseState,
+      phase: PHASE.ADD_PLAYER_NAME,
+      pendingPlayerName: ""
+    });
+    await expect(page.locator('#game-output')).toHaveScreenshot('splash-screen.png');
+  });
+
   test('ADD_PLAYER_NAME phase', async ({ page }) => {
     await page.evaluate((state) => (window as any).renderState(state), {
       ...baseState,
@@ -35,6 +41,28 @@ test.describe('Renderer Screenshot Tests', () => {
       pendingPlayerName: "Alice"
     });
     await expect(page.locator('#game-output')).toHaveScreenshot('add-player-name.png');
+  });
+
+  test('FIRST TURN PROMPT', async ({ page }) => {
+    await page.evaluate((state) => (window as any).renderState(state), {
+      ...baseState,
+      phase: PHASE.ROUND,
+      players: [{ ...PLAYER_1, moveCount: 0 }, PLAYER_2],
+      turnIndex: 0
+    });
+    await expect(page.locator('#game-output')).toHaveScreenshot('round-first-turn.png');
+  });
+
+  test('HOTKEY OVERLAY ON PLAYER', async ({ page }) => {
+    // Put PLAYER_2 where a hotkey for PLAYER_1 would be (e.g., (2, 3) for 'S')
+    const PLAYER_2_ON_TARGET = { ...PLAYER_2, x: 2, y: 3 };
+    await page.evaluate((state) => (window as any).renderState(state), {
+      ...baseState,
+      phase: PHASE.ROUND,
+      players: [PLAYER_1, PLAYER_2_ON_TARGET],
+      turnIndex: 0
+    });
+    await expect(page.locator('#game-output')).toHaveScreenshot('hotkey-overlay-player.png');
   });
 
   test('CHOOSE_PLAYER_AVATAR phase', async ({ page }) => {
@@ -64,16 +92,6 @@ test.describe('Renderer Screenshot Tests', () => {
       turnIndex: 0
     });
     await expect(page.locator('#game-output')).toHaveScreenshot('round-it-turn.png');
-  });
-
-  test('ROUND phase - first turn', async ({ page }) => {
-    await page.evaluate((state) => (window as any).renderState(state), {
-      ...baseState,
-      phase: PHASE.ROUND,
-      players: [{ ...PLAYER_1, moveCount: 0 }, PLAYER_2],
-      turnIndex: 0
-    });
-    await expect(page.locator('#game-output')).toHaveScreenshot('round-first-turn.png');
   });
 
   test('ROUND phase - with recent move highlight', async ({ page }) => {

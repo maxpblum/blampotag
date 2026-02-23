@@ -56,9 +56,10 @@ body {
     /* Use transform: scale() for responsive sizing without affecting layout units.
        Buffer is 100 chars x 45 lines. 100 chars @ 0.6 aspect = 60em.
        Including padding and border, total width is ~65em (~1040px @ 16px).
-       Scale down if viewport is smaller. */
+       Scale down if viewport is smaller. We use slightly larger denominators 
+       (1100x900) to ensure it fits comfortably even with browser chrome. */
     transform-origin: center center;
-    transform: scale(min(1, calc((100vw - 20px) / 1040), calc((100vh - 20px) / 820)));
+    transform: scale(min(1, calc((100vw - 40px) / 1100), calc((100vh - 40px) / 900)));
 }
 
 pre {

@@ -6,6 +6,12 @@ export type Cell = {
     readonly backgroundColor: string;
     readonly fontSize?: string;
     readonly isWide?: boolean; // If true, this character takes up 2 monospaced slots
+    readonly overlay?: {
+        readonly char: string;
+        readonly color: string;
+        readonly backgroundColor: string;
+        readonly fontSize?: string;
+    };
 };
 
 export type CharacterBuffer = readonly (readonly Cell[])[];
@@ -67,6 +73,39 @@ export function writeStringToBuffer(
     return nextBuffer;
 }
 
+export function writeOverlayToBuffer(
+    buffer: CharacterBuffer,
+    text: string,
+    x: number,
+    y: number,
+    color: string,
+    backgroundColor: string,
+    fontSize?: string
+): CharacterBuffer {
+    const nextBuffer = buffer.map((row) => [...row]);
+    const lines = text.split("\n");
+    lines.forEach((line, dy) => {
+        const targetY = y + dy;
+        const row = nextBuffer[targetY];
+        if (!row) return;
+        const chars = Array.from(line);
+        for (let i = 0; i < chars.length; i++) {
+            const char = chars[i] || " ";
+            const currentX = x + i;
+            if (currentX < 0 || currentX >= row.length) continue;
+            
+            const baseCell = row[currentX];
+            if (!baseCell) continue;
+
+            row[currentX] = {
+                ...baseCell,
+                overlay: { char, color, backgroundColor, fontSize }
+            };
+        }
+    });
+    return nextBuffer;
+}
+
 export function drawBox(
     buffer: CharacterBuffer,
     x: number,
@@ -114,8 +153,9 @@ export function renderToContainer(buffer: CharacterBuffer, container: HTMLElemen
             const color = cell.color;
             const bgColor = cell.backgroundColor;
             const fontSize = cell.fontSize;
+            const overlay = cell.overlay;
             
-            // Collect contiguous characters with the same style
+            // Collect contiguous characters with the same style (and NO overlay)
             let blockText = "";
             let blockCharCount = 0;
             let currentX = x;
@@ -132,7 +172,12 @@ export function renderToContainer(buffer: CharacterBuffer, container: HTMLElemen
                     continue;
                 }
                 
-                if (nextCell.color !== color || nextCell.backgroundColor !== bgColor || nextCell.fontSize !== fontSize) {
+                // Overlays break the block
+                if (nextCell.overlay || overlay) {
+                    if (currentX > x) break; // If we already have some block text, stop
+                }
+
+                if (nextCell.color !== color || nextCell.backgroundColor !== bgColor || nextCell.fontSize !== fontSize || nextCell.overlay !== overlay) {
                     break;
                 }
                 
@@ -143,13 +188,16 @@ export function renderToContainer(buffer: CharacterBuffer, container: HTMLElemen
                 blockText += char;
                 blockCharCount += nextCell.isWide ? 2 : 1;
                 currentX++;
+
+                // If this cell has an overlay, we can't add more cells to this block because the overlay is unique to this cell
+                if (overlay) break;
             }
             
             const commonStyle = `color: ${color}; background-color: ${bgColor}; line-height: 1;`;
             
-            if (fontSize) {
-                // Large character: use a wrapper to preserve grid spacing.
-                // The wrapper keeps the parent font-size so 'ch' units are correct.
+            let cellHtml = "";
+            if (fontSize || overlay) {
+                // Large character or overlaid character: use a wrapper to preserve grid spacing.
                 const wrapperStyle = [
                     commonStyle,
                     "display: inline-flex",
@@ -162,11 +210,31 @@ export function renderToContainer(buffer: CharacterBuffer, container: HTMLElemen
                     "z-index: 10",
                     "overflow: visible"
                 ].join("; ") + ";";
-                const innerStyle = `font-size: ${fontSize}; line-height: 1; display: inline-block;`;
-                currentRowHtml += `<span style="${wrapperStyle}"><span style="${innerStyle}">${blockText}</span></span>`;
+                
+                const innerStyle = `font-size: ${fontSize || "inherit"}; line-height: 1; display: inline-block;`;
+                cellHtml = `<span style="${wrapperStyle}"><span style="${innerStyle}">${blockText}</span>`;
+                
+                if (overlay) {
+                    const overlayStyle = [
+                        `color: ${overlay.color}`,
+                        `background-color: ${overlay.backgroundColor}`,
+                        `font-size: ${overlay.fontSize || "inherit"}`,
+                        "position: absolute",
+                        "top: 50%",
+                        "left: 50%",
+                        "transform: translate(-50%, -50%)",
+                        "z-index: 20",
+                        "line-height: 1",
+                        "display: inline-block",
+                        "padding: 2px", // Add some padding for the overlay background
+                        "border-radius: 2px"
+                    ].join("; ") + ";";
+                    cellHtml += `<span style="${overlayStyle}">${overlay.char}</span>`;
+                }
+                
+                cellHtml += `</span>`;
             } else {
                 // Normal text: use inline-block with fixed width to ensure grid alignment.
-                // Flexbox on the parent row will eliminate sub-pixel gaps between these.
                 const style = [
                     commonStyle,
                     "display: inline-block",
@@ -174,8 +242,9 @@ export function renderToContainer(buffer: CharacterBuffer, container: HTMLElemen
                     "vertical-align: top",
                     "white-space: pre"
                 ].join("; ") + ";";
-                currentRowHtml += `<span style="${style}">${blockText}</span>`;
+                cellHtml = `<span style="${style}">${blockText}</span>`;
             }
+            currentRowHtml += cellHtml;
             x = currentX;
         }
         // Use flexbox for the row to ensure spans touch perfectly with no gaps.
