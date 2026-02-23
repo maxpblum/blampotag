@@ -20,11 +20,12 @@ git checkout -B ${DEPLOY_BRANCH}
 
 # 4. Clean up everything but .git and dist
 echo "Cleaning up current directory..."
-# Use find to delete everything except .git and dist
-find . -maxdepth 1 ! -name ".git" ! -name "dist" ! -name "." -exec rm -rf {} +
+# Use git rm to remove all tracked files
+git rm -rf .
 
 # 5. Move build artifacts to root
 echo "Staging build artifacts..."
+# Since dist was ignored, it's still there after git rm
 mv dist/* .
 rm -rf dist
 

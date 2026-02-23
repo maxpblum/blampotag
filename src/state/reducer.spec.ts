@@ -67,7 +67,7 @@ describe('rootReducer', () => {
             });
             const next = rootReducer(state, { type: 'KEY_PRESS', key: 'Enter' });
             expect(next.players.length).toBe(1);
-            expect(next.players[0].name).toBe("Alice");
+            expect(next.players[0]!.name).toBe("Alice");
             expect(next.phase).toBe(PHASE.CONFIRMATION);
             expect(next.pendingPlayerName).toBe("");
         });
@@ -75,7 +75,7 @@ describe('rootReducer', () => {
         it('should skip used emojis when navigating with a/d', () => {
             const state = createTestState({ 
                 phase: PHASE.CHOOSE_PLAYER_AVATAR,
-                players: [{ ...PLAYER_1, emoji: AVAILABLE_EMOJIS[1] }], // 🧛 is used
+                players: [{ ...PLAYER_1, emoji: AVAILABLE_EMOJIS[1]! }], // 🧛 is used
                 avatarSelectionIndex: 0 // 🧙
             });
             
@@ -91,7 +91,7 @@ describe('rootReducer', () => {
         it('should NOT allow selecting a used emoji if Enter is pressed on one', () => {
             const state = createTestState({ 
                 phase: PHASE.CHOOSE_PLAYER_AVATAR,
-                players: [{ ...PLAYER_1, emoji: AVAILABLE_EMOJIS[0] }], // 🧙 is used
+                players: [{ ...PLAYER_1, emoji: AVAILABLE_EMOJIS[0]! }], // 🧙 is used
                 avatarSelectionIndex: 0 // Selection is on 🧙
             });
             const next = rootReducer(state, { type: 'KEY_PRESS', key: 'Enter' });
@@ -130,7 +130,7 @@ describe('rootReducer', () => {
                 turnIndex: 0 
             });
             const next = rootReducer(state, { type: 'KEY_PRESS', key: 'd' }); // Right
-            expect(next.players[0].x).toBe(3);
+            expect(next.players[0]!.x).toBe(3);
             expect(next.turnIndex).toBe(1);
             expect(next.lastMove).toEqual({ fromX: 2, fromY: 2, toX: 3, toY: 2 });
         });
@@ -143,7 +143,7 @@ describe('rootReducer', () => {
                 turnIndex: 0 
             });
             const next = rootReducer(state, { type: 'KEY_PRESS', key: 'a' }); // Left
-            expect(next.players[0].x).toBe(0);
+            expect(next.players[0]!.x).toBe(0);
             expect(next.turnIndex).toBe(0); // Turn should not change if move rejected
         });
 
@@ -156,7 +156,7 @@ describe('rootReducer', () => {
                 transitionProgress: 1.0 
             });
             const next = rootReducer(state, { type: 'KEY_PRESS', key: 'h' }); // Right 2
-            expect(next.players[0].x).toBe(4);
+            expect(next.players[0]!.x).toBe(4);
             expect(next.phase).toBe(PHASE.ROUND);
             expect(next.turnIndex).toBe(1);
         });
@@ -170,7 +170,7 @@ describe('rootReducer', () => {
                 transitionProgress: 1.0 
             });
             const next = rootReducer(state, { type: 'KEY_PRESS', key: 'h' }); // Right 2
-            expect(next.players[0].x).toBe(2); // No move
+            expect(next.players[0]!.x).toBe(2); // No move
             expect(next.turnIndex).toBe(0);
         });
 
@@ -184,7 +184,7 @@ describe('rootReducer', () => {
             });
             const next = rootReducer(state, { type: 'KEY_PRESS', key: 'd' }); // Right
             expect(next.phase).toBe(PHASE.TAGGING_WINDOW);
-            expect(next.players[0].x).toBe(3);
+            expect(next.players[0]!.x).toBe(3);
         });
     });
 
@@ -201,7 +201,7 @@ describe('rootReducer', () => {
         it('should transition to CELEBRATION on Enter if one target', () => {
             const next = rootReducer(state, { type: 'KEY_PRESS', key: 'Enter' });
             expect(next.phase).toBe(PHASE.CELEBRATION);
-            expect(next.players[1].isIt).toBe(true);
+            expect(next.players[1]!.isIt).toBe(true);
         });
 
         it('should transition to PLAYER_SELECTION on Enter if multiple targets', () => {
@@ -214,7 +214,7 @@ describe('rootReducer', () => {
         it('should retract move and skip turn on timeout', () => {
             const next = rootReducer(state, { type: 'TICK', dt: 2001 });
             expect(next.phase).toBe(PHASE.ROUND);
-            expect(next.players[0].x).toBe(4); // Retracted to startOfTurnX
+            expect(next.players[0]!.x).toBe(4); // Retracted to startOfTurnX
             expect(next.turnIndex).toBe(1); // Turn skipped
         });
     });
@@ -232,8 +232,8 @@ describe('rootReducer', () => {
         it('should tag selected player on number key', () => {
             const next = rootReducer(state, { type: 'KEY_PRESS', key: '2' });
             expect(next.phase).toBe(PHASE.CELEBRATION);
-            expect(next.players[2].isIt).toBe(true);
-            expect(next.players[0].isIt).toBe(false);
+            expect(next.players[2]!.isIt).toBe(true);
+            expect(next.players[0]!.isIt).toBe(false);
         });
     });
 
@@ -250,8 +250,8 @@ describe('rootReducer', () => {
             const state = createTestState({ phase: PHASE.RESET, players: [PLAYER_1, PLAYER_2] });
             const next = rootReducer(state, { type: 'TICK', dt: 16 });
             expect(next.phase).toBe(PHASE.PRE_GAME_COUNTDOWN);
-            expect(next.players[0].moveCount).toBe(0);
-            expect(next.players[1].moveCount).toBe(0);
+            expect(next.players[0]!.moveCount).toBe(0);
+            expect(next.players[1]!.moveCount).toBe(0);
         });
     });
 

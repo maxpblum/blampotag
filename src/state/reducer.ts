@@ -83,8 +83,11 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                     const usedEmojis = new Set(state.players.map(p => p.emoji));
                     const availableIndices = AVAILABLE_EMOJIS
                         .map((_, i) => i)
-                        .filter(i => !usedEmojis.has(AVAILABLE_EMOJIS[i]));
-                    return { ...state, phase: PHASE.CHOOSE_PLAYER_AVATAR, avatarSelectionIndex: availableIndices[0] || 0 };
+                        .filter(i => {
+                            const emoji = AVAILABLE_EMOJIS[i];
+                            return emoji !== undefined && !usedEmojis.has(emoji);
+                        });
+                    return { ...state, phase: PHASE.CHOOSE_PLAYER_AVATAR, avatarSelectionIndex: availableIndices[0] ?? 0 };
                 }
                 if (event.key === 'Backspace') {
                     return { ...state, pendingPlayerName: state.pendingPlayerName.slice(0, -1) };
@@ -98,7 +101,10 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                 const usedEmojis = new Set(state.players.map(p => p.emoji));
                 const availableIndices = AVAILABLE_EMOJIS
                     .map((_, i) => i)
-                    .filter(i => !usedEmojis.has(AVAILABLE_EMOJIS[i]));
+                    .filter(i => {
+                        const emoji = AVAILABLE_EMOJIS[i];
+                        return emoji !== undefined && !usedEmojis.has(emoji);
+                    });
 
                 if (availableIndices.length === 0) return state; // Should not happen with current game logic
 
@@ -107,23 +113,25 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                     // If not found, start from nearest (or 0)
                     if (currentIdxInAvailable === -1) currentIdxInAvailable = 0;
                     const nextIdxInAvailable = (currentIdxInAvailable - 1 + availableIndices.length) % availableIndices.length;
-                    return { ...state, avatarSelectionIndex: availableIndices[nextIdxInAvailable] };
+                    const nextVal = availableIndices[nextIdxInAvailable];
+                    return { ...state, avatarSelectionIndex: nextVal ?? 0 };
                 }
                 if (event.key === 'd' || event.key === 'D') {
                     let currentIdxInAvailable = availableIndices.indexOf(state.avatarSelectionIndex);
                     // If not found, start from nearest (or 0)
                     if (currentIdxInAvailable === -1) currentIdxInAvailable = 0;
                     const nextIdxInAvailable = (currentIdxInAvailable + 1) % availableIndices.length;
-                    return { ...state, avatarSelectionIndex: availableIndices[nextIdxInAvailable] };
+                    const nextVal = availableIndices[nextIdxInAvailable];
+                    return { ...state, avatarSelectionIndex: nextVal ?? 0 };
                 }
                 if (event.key === 'Enter') {
                     const selectedEmoji = AVAILABLE_EMOJIS[state.avatarSelectionIndex];
-                    if (usedEmojis.has(selectedEmoji)) return state; // Safety check
+                    if (selectedEmoji === undefined || usedEmojis.has(selectedEmoji)) return state; // Safety check
 
                     const newPlayer: Player = {
                         id: crypto.randomUUID(),
                         name: state.pendingPlayerName,
-                        emoji: selectedEmoji || "👤",
+                        emoji: selectedEmoji,
                         x: 0, y: 0, startOfTurnX: 0, startOfTurnY: 0,
                         isIt: false,
                         moveCount: 0
@@ -132,14 +140,17 @@ export function rootReducer(state: GameState, event: GameEvent): GameState {
                     const nextUsedEmojis = new Set([...state.players, newPlayer].map(p => p.emoji));
                     const nextAvailableIndices = AVAILABLE_EMOJIS
                         .map((_, i) => i)
-                        .filter(i => !nextUsedEmojis.has(AVAILABLE_EMOJIS[i]));
+                        .filter(i => {
+                            const emoji = AVAILABLE_EMOJIS[i];
+                            return emoji !== undefined && !nextUsedEmojis.has(emoji);
+                        });
 
                     return { 
                         ...state, 
                         players: [...state.players, newPlayer],
                         phase: PHASE.CONFIRMATION,
                         pendingPlayerName: "",
-                        avatarSelectionIndex: nextAvailableIndices[0] || 0
+                        avatarSelectionIndex: nextAvailableIndices[0] ?? 0
                     };
                 }
             }
@@ -312,6 +323,5 @@ function startNewRound(state: GameState): GameState {
         players: nextPlayers,
         countdownTimer: 3000,
         turnIndex: 0,
-        lastMove: undefined
     };
 }

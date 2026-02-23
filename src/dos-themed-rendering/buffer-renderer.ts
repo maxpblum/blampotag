@@ -16,7 +16,6 @@ export function createBuffer(width: number, height: number): CharacterBuffer {
             char: " ",
             color: "var(--vga-light-gray)",
             backgroundColor: "var(--vga-black)",
-            fontSize: undefined,
         }))
     );
 }
@@ -48,17 +47,18 @@ export function writeStringToBuffer(
             // Basic heuristic for double-width characters (emojis)
             const isWide = char.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\p{Emoji_Presentation}/u) !== null;
             
-            row[currentX] = { char, color, backgroundColor, fontSize, isWide };
+            row[currentX] = { char, color, backgroundColor, isWide, ...(fontSize ? { fontSize } : {}) };
             
             // If it's wide, we must effectively "nullify" the next cell to prevent overlap/shift
             if (isWide && currentX + 1 < row.length) {
-                row[currentX + 1] = { char: "", color, backgroundColor, fontSize, isWide: false }; // Empty string won't render
+                row[currentX + 1] = { char: "", color, backgroundColor, isWide: false, ...(fontSize ? { fontSize } : {}) };
                 currentX += 2;
             } else {
                 // If we're overwriting a wide char's head with a non-wide char,
                 // the tail must become a space to preserve layout.
-                if (currentX + 1 < row.length && row[currentX + 1].char === "") {
-                    row[currentX + 1] = { ...row[currentX + 1], char: " " };
+                const nextCell = row[currentX + 1];
+                if (nextCell && nextCell.char === "") {
+                    row[currentX + 1] = { ...nextCell, char: " " };
                 }
                 currentX += 1;
             }

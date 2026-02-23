@@ -37,10 +37,10 @@
     "jsx": "react-jsx",
     "verbatimModuleSyntax": true,
     "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
     "skipLibCheck": true,
 
     "moduleResolution": "bundler",
-  }
+  },
+  "exclude": ["e2e", "node_modules", "dist", "**/*.spec.ts", "playwright.config.ts", "vite.config.ts"]
 }

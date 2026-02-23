@@ -46,11 +46,11 @@ describe("GameRenderer", () => {
     it("should trigger move sound when a player moves", () => {
         const previousState: GameState = { 
             ...initialState, 
-            players: [{ id: "1", name: "P1", emoji: "🧙", x: 0, y: 0, startOfTurnX: 0, startOfTurnY: 0, isIt: false }] 
+            players: [{ id: "1", name: "P1", emoji: "🧙", x: 0, y: 0, startOfTurnX: 0, startOfTurnY: 0, isIt: false, moveCount: 0 }] 
         };
         const nextState: GameState = { 
             ...previousState, 
-            players: [{ id: "1", name: "P1", emoji: "🧙", x: 1, y: 0, startOfTurnX: 0, startOfTurnY: 0, isIt: false }] 
+            players: [{ id: "1", name: "P1", emoji: "🧙", x: 1, y: 0, startOfTurnX: 0, startOfTurnY: 0, isIt: false, moveCount: 0 }] 
         };
         renderer.render(nextState, previousState, 0);
         expect(audio.playMove).toHaveBeenCalled();
