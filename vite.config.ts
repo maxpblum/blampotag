@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+  base: '/blampotag/',
   // Use project root so Vite can see both /app and /src
   root: '.',
   build: {
